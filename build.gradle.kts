@@ -4,22 +4,29 @@ val ktorVersion = "2.2.4"
 val logbackClassicVersion = "1.4.6"
 val logbackEncoderVersion = "7.3"
 
+val junitJupiterVersion = "5.9.1"
+
 plugins {
     kotlin("jvm") version "1.8.10"
 }
 
 repositories {
     mavenCentral()
+    maven("https://jitpack.io")
 }
 
 dependencies {
-    implementation("ch.qos.logback:logback-classic:$logbackClassicVersion")
-    implementation("net.logstash.logback:logstash-logback-encoder:$logbackEncoderVersion")
-    implementation("io.ktor:ktor-server-core:$ktorVersion")
-    implementation("io.ktor:ktor-server-cio:$ktorVersion")
-    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
-    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
+    implementation("com.github.navikt:rapids-and-rivers:2022092314391663936769.9d5d33074875")
+
+    implementation("org.flywaydb:flyway-core:9.7.0")
+    implementation("com.zaxxer:HikariCP:5.0.1")
+    implementation("org.postgresql:postgresql:42.5.0")
+    implementation("com.github.seratch:kotliquery:1.9.0")
+
+    testImplementation("org.testcontainers:postgresql:1.17.5")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 }
 
 tasks {
