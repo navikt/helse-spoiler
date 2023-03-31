@@ -20,6 +20,7 @@ internal class VedtaksperiodeVenterRiver (
             validate { it.requireKey(
                 "@id",
                 "fødselsnummer",
+                "aktørId",
                 "organisasjonsnummer",
                 "vedtaksperiodeId",
                 "ventetSiden"
@@ -33,7 +34,20 @@ internal class VedtaksperiodeVenterRiver (
         val overlappendeInfortrygdperioder = overlappendeInfotrygdperiodeEtterInfotrygdendringDao.finn(vedtaksperiodeVenter.vedtaksperiodeId)
         if(overlappendeInfortrygdperioder.isEmpty()) return
 
-        logger.info("Oppdaget en overlappende infotrydperiode hos en vedtaksperiode som er stuck")
+        logger.info("Oppdaget en overlappende infotrydperiode hos en vedtaksperiode som venter på noe")
+
+        context.publish(JsonMessage.newMessage("anmodning_om_forkasting", mapOf(
+            "fødselsnummer" to vedtaksperiodeVenter.fødselsnummer,
+            "aktørId" to vedtaksperiodeVenter.aktørId,
+            "organisasjonsnummer" to vedtaksperiodeVenter.organisasjonsnummer,
+            "vedtaksperiodeId" to vedtaksperiodeVenter.vedtaksperiodeId,
+            "vedtaksperiodeVenter" to mapOf(
+                "ventetPåHva" to vedtaksperiodeVenter.venterPå.hva,
+                "ventetPåHvorfor" to vedtaksperiodeVenter.venterPå.hvorfor,
+                "ventetSiden" to vedtaksperiodeVenter.ventetSiden
+            ),
+            "infotrygdOverlappHendelseId" to overlappendeInfortrygdperioder
+        )).toJson())
     }
 
     private companion object {

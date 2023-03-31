@@ -9,6 +9,7 @@ import java.util.UUID
 data class VedtaksperiodeVenterDto(
     val hendelseId: UUID,
     val fødselsnummer: String,
+    val aktørId: String,
     val organisasjonsnummer: String,
     val vedtaksperiodeId: UUID,
     val ventetSiden: LocalDateTime,
@@ -23,6 +24,7 @@ data class VedtaksperiodeVenterDto(
 fun JsonMessage.toVedtaksperiodeVenterDto() = VedtaksperiodeVenterDto(
     hendelseId = UUID.fromString(this["@id"].asText()),
     fødselsnummer = this["fødselsnummer"].asText(),
+    aktørId = this["aktørId"].asText(),
     organisasjonsnummer = this["organisasjonsnummer"].asText(),
     vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
     ventetSiden = this["ventetSiden"].asLocalDateTime(),

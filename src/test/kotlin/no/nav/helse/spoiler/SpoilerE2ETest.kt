@@ -12,17 +12,18 @@ import org.junit.jupiter.api.TestInstance
 import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class OverlappendeInfotrygdperiodeEtterInfotrygdendringRiverTest {
+class SpoilerE2ETest {
     private val embeddedPostgres = embeddedPostgres()
     private val dataSource = setupDataSourceMedFlyway(embeddedPostgres)
     private val overlappendeInfotrygdperiodeEtterInfotrygdendringDao = OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(dataSource)
-    private val river = TestRapid().apply {
+    private val testRapid = TestRapid().apply {
         OverlappendeInfotrygdperiodeEtterInfotrygdendringRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
+        VedtaksperiodeVenterRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
     }
 
     @AfterAll
     fun tearDown() {
-        river.stop()
+        testRapid.stop()
         dataSource.connection.close()
         embeddedPostgres.close()
     }
@@ -33,9 +34,21 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringRiverTest {
     }
 
     @Test
+    fun `anmoder om å forkaste vedtaksperiode`() {
+        val hendelseId = UUID.randomUUID()
+        val vedtaksperiodeId = UUID.randomUUID()
+        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(hendelseId, vedtaksperiodeId))
+        testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId))
+        val utgående = testRapid.inspektør.message(testRapid.inspektør.size-1)
+
+        assertEquals("anmodning_om_forkasting", utgående["@event_name"].asText())
+        assertEquals(vedtaksperiodeId, utgående["vedtaksperiodeId"].asText().let { UUID.fromString(it) })
+    }
+
+    @Test
     fun `lagrer i databasen`() {
         val hendelseId = UUID.randomUUID()
-        river.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(hendelseId))
+        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(hendelseId))
         assertEquals(3, tellOverlappendeInfotrygdperioderEtterInfotrygdEndring(hendelseId))
     }
 
@@ -53,14 +66,15 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringRiverTest {
 
     @Language("JSON")
     fun overlappendeInfotrygdperiodeEtterInfotrygdEndring(
-        hendelseId: UUID
+        hendelseId: UUID,
+        vedtaksperiodeId: UUID = UUID.randomUUID()
     ) =
         """
             {
               "@id": "$hendelseId",
               "@event_name": "overlappende_infotrygdperiode_etter_infotrygdendring",
               "organisasjonsnummer": "123",
-              "vedtaksperiodeId": "e7edced9-8aab-4b7a-8eb4-566860192a98",
+              "vedtaksperiodeId": "$vedtaksperiodeId",
               "vedtaksperiodeFom": "2023-02-01",
               "vedtaksperiodeTom": "2023-02-12",
               "vedtaksperiodetilstand": "AVVENTER_BLOKKERENDE_PERIODE",
@@ -99,5 +113,31 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringRiverTest {
               "fødselsnummer": "12345678910"
             }
         """.trimIndent()
+
+    @Language("JSON")
+    private fun vedtaksperiodeVenter(
+        vedtaksperiodeId: UUID,
+        venterPåVedtaksperiodeId: UUID = UUID.randomUUID(),
+        venterPå: String = "GODKJENNING"
+    ) = """
+        {
+          "@event_name": "vedtaksperiode_venter",
+          "organisasjonsnummer": "123",
+          "vedtaksperiodeId": "$vedtaksperiodeId",
+          "ventetSiden": "2023-03-04T21:34:17.96322",
+          "venterTil": "+999999999-12-31T23:59:59.999999999",
+          "venterPå": {
+            "vedtaksperiodeId": "$venterPåVedtaksperiodeId",
+            "organisasjonsnummer": "987654321",
+            "venteårsak": {
+              "hva": "$venterPå",
+              "hvorfor": "TESTOLINI"
+            }
+          },
+          "@id": "${UUID.randomUUID()}",
+          "fødselsnummer": "12345678910",
+          "aktørId": "cafebabe"
+        }
+    """
 
 }
