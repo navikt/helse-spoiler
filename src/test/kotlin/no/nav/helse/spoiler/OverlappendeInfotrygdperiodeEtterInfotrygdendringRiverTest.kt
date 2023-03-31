@@ -15,8 +15,9 @@ import java.util.*
 class OverlappendeInfotrygdperiodeEtterInfotrygdendringRiverTest {
     private val embeddedPostgres = embeddedPostgres()
     private val dataSource = setupDataSourceMedFlyway(embeddedPostgres)
+    private val overlappendeInfotrygdperiodeEtterInfotrygdendringDao = OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(dataSource)
     private val river = TestRapid().apply {
-        OverlappendeInfotrygdperiodeEtterInfotrygdendringRiver(this, dataSource)
+        OverlappendeInfotrygdperiodeEtterInfotrygdendringRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
     }
 
     @AfterAll
