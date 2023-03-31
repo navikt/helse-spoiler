@@ -1,9 +1,7 @@
-package no.nav.helse
+package no.nav.helse.spoiler
 
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.spoiler.DataSourceBuilder
-import no.nav.helse.spoiler.OverlappendeInfotrygdperiodeEtterInfotrygdendringRiver
 import org.slf4j.LoggerFactory
 
 internal val log = LoggerFactory.getLogger("no.nav.helse.spoiler")

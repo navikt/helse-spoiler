@@ -3,7 +3,6 @@ package no.nav.helse.spoiler
 import com.fasterxml.jackson.databind.JsonNode
 import kotliquery.queryOf
 import kotliquery.sessionOf
-import no.nav.helse.log
 import no.nav.helse.rapids_rivers.*
 import org.intellij.lang.annotations.Language
 import java.util.*
