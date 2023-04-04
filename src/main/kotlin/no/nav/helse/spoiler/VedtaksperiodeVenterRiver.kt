@@ -15,6 +15,7 @@ internal class VedtaksperiodeVenterRiver (
     init {
         River(rapidApplication).apply {
             validate { it.demandValue("@event_name", "vedtaksperiode_venter") }
+            validate { it.rejectValue("@forårsaket_av.event_name", "anmodning_om_forkasting") }
             validate { it.requireKey("venterPå.venteårsak.hva") }
             validate { it.interestedIn("venterPå.venteårsak.hvorfor") }
             validate { it.requireKey(

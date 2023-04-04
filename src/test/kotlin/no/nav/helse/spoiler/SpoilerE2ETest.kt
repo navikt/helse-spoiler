@@ -7,6 +7,7 @@ import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.util.*
@@ -31,6 +32,7 @@ class SpoilerE2ETest {
     @AfterEach
     fun reset() {
         dataSource.resetDatabase()
+        testRapid.reset()
     }
 
     @Test
@@ -43,6 +45,15 @@ class SpoilerE2ETest {
 
         assertEquals("anmodning_om_forkasting", utgående["@event_name"].asText())
         assertEquals(vedtaksperiodeId, utgående["vedtaksperiodeId"].asText().let { UUID.fromString(it) })
+    }
+
+    @Test
+    fun `anmoder ikke om å forkaste vedtaksperiode hvis vedtaksperiode_venter er forårsaket av en anmoding`() {
+        val hendelseId = UUID.randomUUID()
+        val vedtaksperiodeId = UUID.randomUUID()
+        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(hendelseId, vedtaksperiodeId))
+        testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, forårsaketAv = "anmodning_om_forkasting"))
+        assertTrue(testRapid.inspektør.size == 0)
     }
 
     @Test
@@ -118,7 +129,8 @@ class SpoilerE2ETest {
     private fun vedtaksperiodeVenter(
         vedtaksperiodeId: UUID,
         venterPåVedtaksperiodeId: UUID = UUID.randomUUID(),
-        venterPå: String = "GODKJENNING"
+        venterPå: String = "GODKJENNING",
+        forårsaketAv: String = "påminnelse"
     ) = """
         {
           "@event_name": "vedtaksperiode_venter",
@@ -136,7 +148,10 @@ class SpoilerE2ETest {
           },
           "@id": "${UUID.randomUUID()}",
           "fødselsnummer": "12345678910",
-          "aktørId": "cafebabe"
+          "aktørId": "cafebabe",
+          "@forårsaket_av": {
+            "event_name": "$forårsaketAv"
+          }
         }
     """
 
