@@ -1,9 +1,9 @@
 # Spoiler
 ## Beskrivelse
-Lytter på hendelser om at vedtaksperioder er stuck i spleis og vedtaksperioder som overlapper med infotrygd-utbetalinger. 
+Lytter på hendelser om at vedtaksperioder venter og vedtaksperioder som overlapper med infotrygd-utbetalinger. 
 I så fall anmoder spoiler spleis om å forkaste vedtaksperioden. 
 
-I slike tilfeller sender vi ut en _spoiler-alert_, fordi det ikke er vits å håndtere at vedtaksperioden er stuck når den uansett ville blitt forkastet på et senere tidspunkt...!
+I slike tilfeller sender vi ut en _spoiler-alert_, fordi det ikke er vits å håndtere hva enn vedtaksperioden venter på når behandling av den uansett ikke støttes grunnet overlapp med infotrygd...!
 
 ## Henvendelser
 Spørsmål knyttet til koden eller prosjektet kan stilles som issues her på GitHub.
