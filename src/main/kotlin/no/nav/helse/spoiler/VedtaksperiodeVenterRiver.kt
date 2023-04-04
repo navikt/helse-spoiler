@@ -35,7 +35,7 @@ internal class VedtaksperiodeVenterRiver (
         val overlappendeInfortrygdperioder = overlappendeInfotrygdperiodeEtterInfotrygdendringDao.finn(vedtaksperiodeVenter.vedtaksperiodeId)
         if(overlappendeInfortrygdperioder.isEmpty()) return
 
-        logger.info("Oppdaget en overlappende infotrydperiode hos en vedtaksperiode som venter på noe")
+        logger.info("Oppdaget en overlappende infotrydperiode hos en vedtaksperiode som venter på noe, anmoder om å forkaste")
 
         context.publish(JsonMessage.newMessage("anmodning_om_forkasting", mapOf(
             "fødselsnummer" to vedtaksperiodeVenter.fødselsnummer,
