@@ -60,7 +60,13 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(private val dataSourc
 
     fun finn(vedtaksperiodeId: UUID) = sessionOf(dataSource).use { session ->
         @Language("PostgreSQL")
-        val statement = """SELECT id FROM overlappende_infotrygdperiode_etter_infotrygdendring WHERE vedtaksperiode_id=?"""
+        val statement = """
+            SELECT vedtaksperiode.id FROM overlappende_infotrygdperiode_etter_infotrygdendring vedtaksperiode 
+            JOIN overlappende_infotrygd_periode infotrygd on vedtaksperiode.id = infotrygd.hendelse_id
+            WHERE vedtaksperiode.vedtaksperiode_id=?
+            AND infotrygd.type in ('ARBEIDSGIVERUTBETALING', 'PERSONUTBETALING')
+            
+        """
         session.run(
             queryOf(
                 statement,

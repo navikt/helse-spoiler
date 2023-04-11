@@ -63,6 +63,33 @@ class SpoilerE2ETest {
         assertEquals(3, tellOverlappendeInfotrygdperioderEtterInfotrygdEndring(hendelseId))
     }
 
+    @Test
+    fun `anmoder ikke om å forkaste vedtaksperiode hvis det er ferie som er registrert i Infotrygd`() {
+        val vedtaksperiodeId = UUID.randomUUID()
+        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(UUID.randomUUID(), vedtaksperiodeId, "FRIPERIODE"))
+        testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId))
+        assertTrue(testRapid.inspektør.size == 0)
+    }
+
+    @Test
+    fun `anmoder om å forkaste vedtaksperiode hvis det er arbeidsgiverutbetaling som er registrert i Infotrygd`() {
+        val vedtaksperiodeId = UUID.randomUUID()
+        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(UUID.randomUUID(), vedtaksperiodeId, "ARBEIDSGIVERUTBETALING"))
+        testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId))
+        val utgående = testRapid.inspektør.message(testRapid.inspektør.size-1)
+        assertEquals("anmodning_om_forkasting", utgående["@event_name"].asText())
+        assertEquals(vedtaksperiodeId, utgående["vedtaksperiodeId"].asText().let { UUID.fromString(it) })
+    }
+
+    @Test
+    fun `anmoder om å forkaste vedtaksperiode hvis det er personutbetaling som er registrert i Infotrygd`() {
+        val vedtaksperiodeId = UUID.randomUUID()
+        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(UUID.randomUUID(), vedtaksperiodeId, "PERSONUTBETALING"))
+        testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId))
+        val utgående = testRapid.inspektør.message(testRapid.inspektør.size-1)
+        assertEquals("anmodning_om_forkasting", utgående["@event_name"].asText())
+        assertEquals(vedtaksperiodeId, utgående["vedtaksperiodeId"].asText().let { UUID.fromString(it) })
+    }
 
     private fun tellOverlappendeInfotrygdperioderEtterInfotrygdEndring(hendelseId: UUID): Int {
         return sessionOf(dataSource).use { session ->
@@ -118,6 +145,34 @@ class SpoilerE2ETest {
                   "service": "spleis",
                   "instance": "spleis-74b6b945dd-txzqj",
                   "image": "ghcr.io/navikt/helse-spleis/spleis:9407553"
+                }
+              ],
+              "aktørId": "cafebabe",
+              "fødselsnummer": "12345678910"
+            }
+        """.trimIndent()
+
+    @Language("JSON")
+    fun overlappendeInfotrygdperiodeEtterInfotrygdEndring(
+        hendelseId: UUID,
+        vedtaksperiodeId: UUID = UUID.randomUUID(),
+        type: String
+    ) =
+        """
+            {
+              "@id": "$hendelseId",
+              "@event_name": "overlappende_infotrygdperiode_etter_infotrygdendring",
+              "organisasjonsnummer": "123",
+              "vedtaksperiodeId": "$vedtaksperiodeId",
+              "vedtaksperiodeFom": "2023-02-01",
+              "vedtaksperiodeTom": "2023-02-12",
+              "vedtaksperiodetilstand": "AVVENTER_BLOKKERENDE_PERIODE",
+              "infotrygdhistorikkHendelseId": "7ff91df2-fcbe-4657-9171-709917aa043d",
+              "infotrygdperioder": [
+                {
+                  "fom": "2023-02-01",
+                  "tom": "2023-02-12",
+                  "type": "$type"
                 }
               ],
               "aktørId": "cafebabe",
