@@ -48,6 +48,15 @@ class SpoilerE2ETest {
     }
 
     @Test
+    fun `anmoder ikke om å forkaste vedtaksperiode i AUU`() {
+        val hendelseId = UUID.randomUUID()
+        val vedtaksperiodeId = UUID.randomUUID()
+        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(hendelseId, vedtaksperiodeId, tilstand = "AVSLUTTET_UTEN_UTBETALING"))
+        testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId))
+        assertEquals(0, testRapid.inspektør.size)
+    }
+
+    @Test
     fun `anmoder ikke om å forkaste vedtaksperiode hvis vedtaksperiode_venter er forårsaket av en anmoding`() {
         val hendelseId = UUID.randomUUID()
         val vedtaksperiodeId = UUID.randomUUID()
@@ -66,7 +75,7 @@ class SpoilerE2ETest {
     @Test
     fun `anmoder ikke om å forkaste vedtaksperiode hvis det er ferie som er registrert i Infotrygd`() {
         val vedtaksperiodeId = UUID.randomUUID()
-        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(UUID.randomUUID(), vedtaksperiodeId, "FRIPERIODE"))
+        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(UUID.randomUUID(), vedtaksperiodeId, type  = "FRIPERIODE"))
         testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId))
         assertTrue(testRapid.inspektør.size == 0)
     }
@@ -74,7 +83,7 @@ class SpoilerE2ETest {
     @Test
     fun `anmoder om å forkaste vedtaksperiode hvis det er arbeidsgiverutbetaling som er registrert i Infotrygd`() {
         val vedtaksperiodeId = UUID.randomUUID()
-        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(UUID.randomUUID(), vedtaksperiodeId, "ARBEIDSGIVERUTBETALING"))
+        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(UUID.randomUUID(), vedtaksperiodeId, type= "ARBEIDSGIVERUTBETALING"))
         testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId))
         val utgående = testRapid.inspektør.message(testRapid.inspektør.size-1)
         assertEquals("anmodning_om_forkasting", utgående["@event_name"].asText())
@@ -105,7 +114,8 @@ class SpoilerE2ETest {
     @Language("JSON")
     fun overlappendeInfotrygdperiodeEtterInfotrygdEndring(
         hendelseId: UUID,
-        vedtaksperiodeId: UUID = UUID.randomUUID()
+        vedtaksperiodeId: UUID = UUID.randomUUID(),
+        tilstand: String = "AVVENTER_BLOKKERENDE_PERIODE"
     ) =
         """
             {
@@ -115,7 +125,7 @@ class SpoilerE2ETest {
               "vedtaksperiodeId": "$vedtaksperiodeId",
               "vedtaksperiodeFom": "2023-02-01",
               "vedtaksperiodeTom": "2023-02-12",
-              "vedtaksperiodetilstand": "AVVENTER_BLOKKERENDE_PERIODE",
+              "vedtaksperiodetilstand": "$tilstand",
               "infotrygdhistorikkHendelseId": "7ff91df2-fcbe-4657-9171-709917aa043d",
               "infotrygdperioder": [
                 {
@@ -156,7 +166,8 @@ class SpoilerE2ETest {
     fun overlappendeInfotrygdperiodeEtterInfotrygdEndring(
         hendelseId: UUID,
         vedtaksperiodeId: UUID = UUID.randomUUID(),
-        type: String
+        type: String,
+        tilstand: String = "AVVENTER_BLOKKERENDE_PERIODE"
     ) =
         """
             {
@@ -166,7 +177,7 @@ class SpoilerE2ETest {
               "vedtaksperiodeId": "$vedtaksperiodeId",
               "vedtaksperiodeFom": "2023-02-01",
               "vedtaksperiodeTom": "2023-02-12",
-              "vedtaksperiodetilstand": "AVVENTER_BLOKKERENDE_PERIODE",
+              "vedtaksperiodetilstand": "$tilstand",
               "infotrygdhistorikkHendelseId": "7ff91df2-fcbe-4657-9171-709917aa043d",
               "infotrygdperioder": [
                 {
