@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.navikt:rapids-and-rivers:2023093008351696055717.ffdec6aede3d")
+    implementation("com.github.navikt:rapids-and-rivers:2024010209171704183456.6d035b91ffb4")
 
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
