@@ -1,12 +1,18 @@
-val javaVersion = "17"
-val ktorVersion = "2.3.4"
-val logbackClassicVersion = "1.4.11"
+val javaVersion = "21"
+val ktorVersion = "2.3.7"
+val logbackClassicVersion = "1.4.14"
 val logbackEncoderVersion = "7.4"
 
-val junitJupiterVersion = "5.10.0"
+val junitJupiterVersion = "5.10.1"
+
+val flywayVersion = "10.4.1"
+val hikariCPVersion = "5.1.0"
+val postgresqlVersion = "42.7.1"
+val kotliQueryVersion = "1.9.0"
+val testContainerPostgresqlVersion = "1.19.3"
 
 plugins {
-    kotlin("jvm") version "1.9.10"
+    kotlin("jvm") version "1.9.22"
 }
 
 repositories {
@@ -17,12 +23,13 @@ repositories {
 dependencies {
     implementation("com.github.navikt:rapids-and-rivers:2023093008351696055717.ffdec6aede3d")
 
-    implementation("org.flywaydb:flyway-core:9.7.0")
-    implementation("com.zaxxer:HikariCP:5.0.1")
+    implementation("org.flywaydb:flyway-core:$flywayVersion")
+    implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
+    implementation("com.zaxxer:HikariCP:$hikariCPVersion")
     implementation("org.postgresql:postgresql:42.6.0")
-    implementation("com.github.seratch:kotliquery:1.9.0")
+    implementation("com.github.seratch:kotliquery:$kotliQueryVersion")
 
-    testImplementation("org.testcontainers:postgresql:1.17.5")
+    testImplementation("org.testcontainers:postgresql:$testContainerPostgresqlVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
@@ -35,6 +42,13 @@ tasks {
 
     compileTestKotlin {
         kotlinOptions.jvmTarget = javaVersion
+    }
+
+    withType<Test> {
+        useJUnitPlatform()
+        testLogging {
+            events("passed", "skipped", "failed")
+        }
     }
 
     withType<Jar> {
