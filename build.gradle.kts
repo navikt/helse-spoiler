@@ -26,7 +26,7 @@ dependencies {
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     implementation("com.zaxxer:HikariCP:$hikariCPVersion")
-    implementation("org.postgresql:postgresql:42.6.0")
+    implementation("org.postgresql:postgresql:42.7.2")
     implementation("com.github.seratch:kotliquery:$kotliQueryVersion")
 
     testImplementation("org.testcontainers:postgresql:$testContainerPostgresqlVersion")
