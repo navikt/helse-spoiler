@@ -23,7 +23,6 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringRiver(
                 it.require("vedtaksperiodeFom", JsonNode::asLocalDate)
                 it.require("vedtaksperiodeTom", JsonNode::asLocalDate)
                 it.requireKey("vedtaksperiodetilstand", "fødselsnummer", "aktørId", "organisasjonsnummer")
-                it.rejectValue("vedtaksperiodetilstand", "AVSLUTTET_UTEN_UTBETALING")
                 it.interestedIn("infotrygdhistorikkHendelseId") { id -> UUID.fromString(id.asText()) }
                 it.requireArray("infotrygdperioder") {
                     require("fom", JsonNode::asLocalDate)

@@ -65,6 +65,7 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(private val dataSourc
             JOIN overlappende_infotrygd_periode infotrygd on vedtaksperiode.id = infotrygd.hendelse_id
             WHERE vedtaksperiode.vedtaksperiode_id=?
             AND infotrygd.type in ('ARBEIDSGIVERUTBETALING', 'PERSONUTBETALING')
+            AND vedtaksperiode.vedtaksperiode_tilstand != 'AVSLUTTET_UTEN_UTBETALING'
             
         """
         session.run(
