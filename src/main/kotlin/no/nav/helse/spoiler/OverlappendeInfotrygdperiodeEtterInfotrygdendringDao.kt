@@ -62,16 +62,16 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(private val dataSourc
 
     fun lagOppsummering() = sessionOf(dataSource).use {
         it.run(queryOf("""
-            select date_part('year', vedtaksperiode_fom), vedtaksperiode_tilstand, count(1), oip.type
+            select date_part('year', vedtaksperiode_fom), vedtaksperiode_tilstand, count(1), (case when oip.type='FRIPERIODE' then 'FERIE' else 'UTBETALING' end)
             from overlappende_infotrygdperiode_etter_infotrygdendring o
             inner join public.overlappende_infotrygd_periode oip on o.id = oip.hendelse_id
-            group by vedtaksperiode_tilstand,date_part('year', vedtaksperiode_fom),oip.type
+            group by vedtaksperiode_tilstand,date_part('year', vedtaksperiode_fom), (case when oip.type='FRIPERIODE' then 'FERIE' else 'UTBETALING' end)
         """).map { rad ->
             OppsummeringDto(
                 år = Year.of(rad.int(1)),
                 tilstand = rad.string(2),
                 antall = rad.int(3),
-                overlapptype = rad.string(4)
+                overlapptype = OppsummeringDto.Overlapptype.valueOf(rad.string(4))
             )
         }.asList)
     }
@@ -105,8 +105,10 @@ data class OppsummeringDto(
     val år: Year,
     val tilstand: String,
     val antall: Int,
-    val overlapptype: String
-)
+    val overlapptype: Overlapptype
+) {
+    enum class Overlapptype { FERIE, UTBETALING }
+}
 
 data class OverlappendeInfotrygdperiodeDto(
     val hendelseId: UUID // TODO: flere felter?

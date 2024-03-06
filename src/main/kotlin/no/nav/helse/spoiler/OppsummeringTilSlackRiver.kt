@@ -30,15 +30,7 @@ internal class OppsummeringTilSlackRiver (
         val oppsummering = overlappendeInfotrygdperiodeEtterInfotrygdendringDao.lagOppsummering()
         if (oppsummering.isEmpty()) return lagHyggeligMelding(context)
         val totaltAntall = oppsummering.sumOf { it.antall }
-        val perÅr = oppsummering
-            .groupBy { if (it.overlapptype == "FRIPERIODE") "FERIE" else "UTBETALING" }
-            .map { (hvorfor, verdier) ->
-                verdier.first().copy(
-                    antall = verdier.sumOf { it.antall },
-                    overlapptype = hvorfor
-                )
-            }
-            .groupBy { it.år }
+        val perÅr = oppsummering.groupBy { it.år }
         val melding = "Det er totalt $totaltAntall vedtaksperioder med overlapp mot Infotrygd. :sadkek:\n\n" +
                 perÅr.entries.joinToString(separator = "\n\n") { (år, verdier) ->
                     "$år ${emojiForÅr(år)}\n${verdier.joinToString(separator = "\n") { verdi ->
@@ -65,9 +57,11 @@ internal class OppsummeringTilSlackRiver (
         return ""
     }
 
-    private fun emojiForType(type: String): String {
-        if (type == "FERIE") return ":beach_with_umbrella:"
-        return ":pepe_cash:"
+    private fun emojiForType(type: OppsummeringDto.Overlapptype): String {
+        return when (type) {
+            OppsummeringDto.Overlapptype.FERIE -> ":beach_with_umbrella:"
+            OppsummeringDto.Overlapptype.UTBETALING -> ":pepe_cash:"
+        }
     }
 
     private fun lagHyggeligMelding(context: MessageContext) {
