@@ -31,8 +31,11 @@ internal class OppsummeringTilSlackRiver (
         if (oppsummering.isEmpty()) return lagHyggeligMelding(context)
         val totaltAntall = oppsummering.sumOf { it.antall }
         val perÅr = oppsummering.groupBy { it.år }
+            .entries
+            .sortedByDescending { it.key }
+            .map { (år, verdier) -> år to verdier.sortedByDescending { it.antall }}
         val melding = "Det er totalt $totaltAntall vedtaksperioder med overlapp mot Infotrygd. :sadkek:\n\n" +
-                perÅr.entries.joinToString(separator = "\n\n") { (år, verdier) ->
+                perÅr.joinToString(separator = "\n\n") { (år, verdier) ->
                     "$år ${emojiForÅr(år)}\n${verdier.joinToString(separator = "\n") { verdi ->
                         "\t${"${verdi.antall} stk".padEnd(10, ' ')} ${verdi.tilstand} ${emojiForTilstand(verdi.tilstand)} pga. ${verdi.overlapptype} ${emojiForType(verdi.overlapptype)}"
                     }}"
