@@ -58,6 +58,10 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(private val dataSourc
         }
     }
 
+    fun slett(vedtaksperiodeId: UUID) = sessionOf(dataSource).use {
+        it.run(queryOf("delete from overlappende_infotrygdperiode_etter_infotrygdendring where vedtaksperiode_id=?", vedtaksperiodeId).asExecute)
+    }
+
     fun finn(vedtaksperiodeId: UUID) = sessionOf(dataSource).use { session ->
         @Language("PostgreSQL")
         val statement = """
