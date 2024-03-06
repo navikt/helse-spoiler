@@ -62,15 +62,16 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(private val dataSourc
 
     fun lagOppsummering() = sessionOf(dataSource).use {
         it.run(queryOf("""
-            select date_part('year', vedtaksperiode_fom), vedtaksperiode_tilstand, count(1)
-            from overlappende_infotrygdperiode_etter_infotrygdendring
-            group by vedtaksperiode_tilstand,date_part('year', vedtaksperiode_fom)
-            order by count(1) desc
+            select date_part('year', vedtaksperiode_fom), vedtaksperiode_tilstand, count(1), oip.type
+            from overlappende_infotrygdperiode_etter_infotrygdendring o
+            inner join public.overlappende_infotrygd_periode oip on o.id = oip.hendelse_id
+            group by vedtaksperiode_tilstand,date_part('year', vedtaksperiode_fom),oip.type
         """).map { rad ->
             OppsummeringDto(
                 år = Year.of(rad.int(1)),
                 tilstand = rad.string(2),
-                antall = rad.int(3)
+                antall = rad.int(3),
+                overlapptype = rad.string(4)
             )
         }.asList)
     }
@@ -103,7 +104,8 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(private val dataSourc
 data class OppsummeringDto(
     val år: Year,
     val tilstand: String,
-    val antall: Int
+    val antall: Int,
+    val overlapptype: String
 )
 
 data class OverlappendeInfotrygdperiodeDto(
