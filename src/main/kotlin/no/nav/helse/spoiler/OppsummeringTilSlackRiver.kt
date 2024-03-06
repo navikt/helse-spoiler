@@ -21,7 +21,7 @@ internal class OppsummeringTilSlackRiver (
             validate {
                 it.demandValue("@event_name", "hel_time")
                 it.demandValue("time", "9")
-                it.demandValue("ukedag", "MONDAY")
+                it.demandValue("dagIUke", "1")
             }
         }.register(this)
     }
