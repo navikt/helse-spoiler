@@ -3,6 +3,8 @@ package no.nav.helse.spoiler
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import org.intellij.lang.annotations.Language
+import java.time.Year
+import java.time.YearMonth
 import java.util.UUID
 import javax.sql.DataSource
 
@@ -58,6 +60,21 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(private val dataSourc
         }
     }
 
+    fun lagOppsummering() = sessionOf(dataSource).use {
+        it.run(queryOf("""
+            select date_part('year', vedtaksperiode_fom), vedtaksperiode_tilstand, count(1)
+            from overlappende_infotrygdperiode_etter_infotrygdendring
+            group by vedtaksperiode_tilstand,date_part('year', vedtaksperiode_fom)
+            order by count(1) desc
+        """).map { rad ->
+            OppsummeringDto(
+                år = Year.of(rad.int(1)),
+                tilstand = rad.string(2),
+                antall = rad.int(3)
+            )
+        }.asList)
+    }
+
     fun slett(vedtaksperiodeId: UUID) = sessionOf(dataSource).use {
         it.run(queryOf("delete from overlappende_infotrygdperiode_etter_infotrygdendring where vedtaksperiode_id=?", vedtaksperiodeId).asExecute)
     }
@@ -82,6 +99,12 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(private val dataSourc
         )
     }
 }
+
+data class OppsummeringDto(
+    val år: Year,
+    val tilstand: String,
+    val antall: Int
+)
 
 data class OverlappendeInfotrygdperiodeDto(
     val hendelseId: UUID // TODO: flere felter?

@@ -23,6 +23,7 @@ fun launchApp(env: Map<String, String>) {
         OverlappendeInfotrygdperiodeEtterInfotrygdendringRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
         VedtaksperiodeVenterRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
         VedtaksperiodeForkastetRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
+        OppsummeringTilSlackRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
     }.apply {
         register(object : RapidsConnection.StatusListener {
             override fun onStartup(rapidsConnection: RapidsConnection) {
