@@ -76,6 +76,9 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(private val dataSourc
         }.asList)
     }
 
+    fun slettPerson(fnr: String) = sessionOf(dataSource).use {
+        it.run(queryOf("delete from overlappende_infotrygdperiode_etter_infotrygdendring where fodselsnummer = ?", fnr).asExecute)
+    }
     fun slett(vedtaksperiodeId: UUID) = sessionOf(dataSource).use {
         it.run(queryOf("delete from overlappende_infotrygdperiode_etter_infotrygdendring where vedtaksperiode_id=?", vedtaksperiodeId).asExecute)
     }

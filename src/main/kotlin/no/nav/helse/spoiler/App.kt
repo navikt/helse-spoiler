@@ -20,6 +20,7 @@ fun launchApp(env: Map<String, String>) {
     val overlappendeInfotrygdperiodeEtterInfotrygdendringDao = OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(dataSource)
 
     RapidApplication.create(env).apply {
+        InfotrygdendringRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
         OverlappendeInfotrygdperiodeEtterInfotrygdendringRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
         VedtaksperiodeVenterRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
         VedtaksperiodeForkastetRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)

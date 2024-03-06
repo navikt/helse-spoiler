@@ -1,0 +1,2 @@
+ALTER TABLE overlappende_infotrygdperiode_etter_infotrygdendring ADD CONSTRAINT vedtaksperiode_id_uniq_idx UNIQUE (vedtaksperiode_id);
+CREATE INDEX overlappende_infotrygd_periode_fnr_idx ON overlappende_infotrygdperiode_etter_infotrygdendring(fodselsnummer);
