@@ -14,17 +14,17 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(private val dataSourc
         it.transaction { session ->
             @Language("PostgreSQL")
             val statement = """
-                    with hendelse_id as (
-                        select id from (values (:hendelseId)) v(id )
+                    with eksisterende as (
+                        select id from overlappende_infotrygdperiode_etter_infotrygdendring where vedtaksperiode_id=:vedtaksperiodeId
                     ), ins as (
-                         INSERT INTO overlappende_infotrygdperiode_etter_infotrygdendring(id, opprettet, fodselsnummer, aktor_id, organisasjonsnummer, vedtaksperiode_id, vedtaksperiode_fom, vedtaksperiode_tom, vedtaksperiode_tilstand, infotrygdhistorikk_hendelseId)
-                         VALUES (:hendelseId, :opprettet, :fodselsnummer, :aktorId, :organisasjonsnummer, :vedtaksperiodeId, :vedtaksperiodeFom, :vedtaksperiodeTom, :vedtaksperiodeTilstand, :infotrygdhistorikkHendelseId)
-                         ON CONFLICT DO NOTHING
-                         RETURNING id
+                     INSERT INTO overlappende_infotrygdperiode_etter_infotrygdendring(id, opprettet, fodselsnummer, aktor_id, organisasjonsnummer, vedtaksperiode_id, vedtaksperiode_fom, vedtaksperiode_tom, vedtaksperiode_tilstand, infotrygdhistorikk_hendelseId)
+                     VALUES (:hendelseId, :opprettet, :fodselsnummer, :aktorId, :organisasjonsnummer, :vedtaksperiodeId, :vedtaksperiodeFom, :vedtaksperiodeTom, :vedtaksperiodeTilstand, :infotrygdhistorikkHendelseId)
+                     ON CONFLICT DO NOTHING
+                     RETURNING id
                     )
                     select id from ins
                     union all
-                    select id from hendelse_id;
+                    select id from eksisterende;
                 """
             val id = session.run(
                 queryOf(
@@ -45,6 +45,9 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(private val dataSourc
                     rad.uuid("id")
                 }.asSingle
             ) ?: error("Forventet å få id tilbake fra spørring; enten fordi raden finnes fra før eller fordi den er satt inn nå")
+
+            // slette evt. tidligere hendelser først, i tilfelle det var en eksisterende vedtaksperiodeId-rad
+            session.run(queryOf("DELETE FROM overlappende_infotrygd_periode where hendelse_id=?", id).asExecute)
 
             @Language("PostgreSQL")
             val statement2 = """
