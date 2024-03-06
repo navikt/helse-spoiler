@@ -14,11 +14,19 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(private val dataSourc
         it.transaction { session ->
             @Language("PostgreSQL")
             val statement = """
-                     INSERT INTO overlappende_infotrygdperiode_etter_infotrygdendring(id, opprettet, fodselsnummer, aktor_id, organisasjonsnummer, vedtaksperiode_id, vedtaksperiode_fom, vedtaksperiode_tom, vedtaksperiode_tilstand, infotrygdhistorikk_hendelseId)
-                     VALUES (:hendelseId, :opprettet, :fodselsnummer, :aktorId, :organisasjonsnummer, :vedtaksperiodeId, :vedtaksperiodeFom, :vedtaksperiodeTom, :vedtaksperiodeTilstand, :infotrygdhistorikkHendelseId)
-                     ON CONFLICT DO NOTHING
+                    with hendelse_id as (
+                        select id from (values (:hendelseId)) v(id )
+                    ), ins as (
+                         INSERT INTO overlappende_infotrygdperiode_etter_infotrygdendring(id, opprettet, fodselsnummer, aktor_id, organisasjonsnummer, vedtaksperiode_id, vedtaksperiode_fom, vedtaksperiode_tom, vedtaksperiode_tilstand, infotrygdhistorikk_hendelseId)
+                         VALUES (:hendelseId, :opprettet, :fodselsnummer, :aktorId, :organisasjonsnummer, :vedtaksperiodeId, :vedtaksperiodeFom, :vedtaksperiodeTom, :vedtaksperiodeTilstand, :infotrygdhistorikkHendelseId)
+                         ON CONFLICT DO NOTHING
+                         RETURNING id
+                    )
+                    select id from ins
+                    union all
+                    select id from hendelse_id;
                 """
-            session.run(
+            val id = session.run(
                 queryOf(
                     statement = statement,
                     paramMap = mapOf(
@@ -33,8 +41,10 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(private val dataSourc
                         "vedtaksperiodeTilstand" to overlappendeInfotrygdperiodeEtterInfotrygdendring.vedtaksperiodeTilstand,
                         "infotrygdhistorikkHendelseId" to overlappendeInfotrygdperiodeEtterInfotrygdendring.infotrygdhistorikkHendelseId
                     )
-                ).asExecute
-            )
+                ).map { rad ->
+                    rad.uuid("id")
+                }.asSingle
+            ) ?: error("Forventet å få id tilbake fra spørring; enten fordi raden finnes fra før eller fordi den er satt inn nå")
 
             @Language("PostgreSQL")
             val statement2 = """
@@ -48,7 +58,7 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(private val dataSourc
                     statement = statement2,
                     *overlappendeInfotrygdperiodeEtterInfotrygdendring.infotrygdperioder.flatMap { periode ->
                         listOf(
-                            periode.hendelseId,
+                            id,
                             periode.fom,
                             periode.tom,
                             periode.type,
