@@ -48,8 +48,8 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringRiver(
         val vedtaksperiodeId = packet["vedtaksperiodeId"].let { UUID.fromString(it.asText()) }
         val periode = packet["vedtaksperiodeFom"].asLocalDate() to packet["vedtaksperiodeTom"].asLocalDate()
         val slackmelding = slackmelding(vedtaksperiodeId, vedtaksperiodetilstand, periode)
-        log.info("Publiserer overlappende Infotrygdperiode til Slack")
-        context.publish(lagSlackmelding(slackmelding).toJson())
+        //log.info("Publiserer overlappende Infotrygdperiode til Slack")
+        //context.publish(lagSlackmelding(slackmelding).toJson())
     }
 
     private fun erPeriodeTidligereAvsluttet(vedtaksperiodetilstand: String) : Boolean {
