@@ -20,8 +20,8 @@ internal class OppsummeringTilSlackRiver (
         River(rapidApplication).apply {
             validate {
                 it.demandValue("@event_name", "hel_time")
-                it.demandValue("time", "9")
-                it.demandValue("dagIUke", "1")
+                it.demandValue("time", 9)
+                it.demandValue("dagIUke", 1)
             }
         }.register(this)
     }
