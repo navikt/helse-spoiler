@@ -31,11 +31,13 @@ internal class VedtaksperiodeVenterRiver (
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         val vedtaksperiodeVenter = packet.toVedtaksperiodeVenterDto()
+        val venterPåInntektsmelding = vedtaksperiodeVenter.venterPå.hva == "INNTEKTSMELDING"
+        if (!venterPåInntektsmelding) return
 
         val overlappendeInfortrygdperioder = overlappendeInfotrygdperiodeEtterInfotrygdendringDao.finn(vedtaksperiodeVenter.vedtaksperiodeId)
         if(overlappendeInfortrygdperioder.isEmpty()) return
 
-        logger.info("Oppdaget en overlappende infotrydperiode hos en vedtaksperiode som venter på noe, anmoder om å forkaste")
+        logger.info("Oppdaget en overlappende infotrydperiode hos en vedtaksperiode som venter på inntektsmelding, anmoder om å forkaste")
 
         context.publish(JsonMessage.newMessage("anmodning_om_forkasting", mapOf(
             "fødselsnummer" to vedtaksperiodeVenter.fødselsnummer,
