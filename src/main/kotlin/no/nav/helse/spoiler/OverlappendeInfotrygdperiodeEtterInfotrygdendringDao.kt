@@ -103,7 +103,7 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(private val dataSourc
             WHERE vedtaksperiode.fodselsnummer = ?
             
         """
-        return run(queryOf(statement, fødselsnummer).map { it.uuid("vedtakskperiode_id") }.asList).toSet()
+        return run(queryOf(statement, fødselsnummer).map { it.uuid("vedtaksperiode_id") }.asList).toSet()
     }
 }
 
