@@ -22,10 +22,10 @@ spec:
     path: /metrics
   resources:
     limits:
-      memory: 2048Mi
+      memory: 1024Mi
     requests:
       cpu: 50m
-      memory: 512Mi
+      memory: 256Mi
   gcp:
     sqlInstances:
       - type: POSTGRES_14
