@@ -5,6 +5,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import org.slf4j.LoggerFactory
 
 internal val log = LoggerFactory.getLogger("no.nav.helse.spoiler")
+internal val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
 fun main() {
     val env = System.getenv()
@@ -20,8 +21,7 @@ fun launchApp(env: Map<String, String>) {
     val overlappendeInfotrygdperiodeEtterInfotrygdendringDao = OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(dataSource)
 
     RapidApplication.create(env).apply {
-        InfotrygdendringRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
-        OverlappendeInfotrygdperiodeEtterInfotrygdendringRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
+        OverlappendeInfotrygdperioderRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
         VedtaksperiodeVenterRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
         VedtaksperiodeForkastetRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
         OppsummeringTilSlackRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)

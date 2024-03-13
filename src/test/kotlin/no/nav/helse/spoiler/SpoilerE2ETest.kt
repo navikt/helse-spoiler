@@ -18,7 +18,7 @@ class SpoilerE2ETest {
     private val dataSource = setupDataSourceMedFlyway(embeddedPostgres)
     private val overlappendeInfotrygdperiodeEtterInfotrygdendringDao = OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(dataSource)
     private val testRapid = TestRapid().apply {
-        OverlappendeInfotrygdperiodeEtterInfotrygdendringRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
+        OverlappendeInfotrygdperioderRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
         VedtaksperiodeVenterRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
     }
 
@@ -39,7 +39,7 @@ class SpoilerE2ETest {
     fun `anmoder om å forkaste vedtaksperiode`() {
         val hendelseId = UUID.randomUUID()
         val vedtaksperiodeId = UUID.randomUUID()
-        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(hendelseId, vedtaksperiodeId))
+        testRapid.sendTestMessage(overlappendeInfotrygdperioder(hendelseId, vedtaksperiodeId))
         testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId))
         val utgående = testRapid.inspektør.message(testRapid.inspektør.size-1)
 
@@ -51,7 +51,7 @@ class SpoilerE2ETest {
     fun `anmoder ikke om å forkaste vedtaksperiode i AUU`() {
         val hendelseId = UUID.randomUUID()
         val vedtaksperiodeId = UUID.randomUUID()
-        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(hendelseId, vedtaksperiodeId, tilstand = "AVSLUTTET_UTEN_UTBETALING"))
+        testRapid.sendTestMessage(overlappendeInfotrygdperioder(hendelseId, vedtaksperiodeId, tilstand = "AVSLUTTET_UTEN_UTBETALING"))
         testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId))
         assertEquals(0, testRapid.inspektør.size)
     }
@@ -60,7 +60,7 @@ class SpoilerE2ETest {
     fun `anmoder ikke om å forkaste vedtaksperiode hvis vedtaksperiode_venter er forårsaket av en anmoding`() {
         val hendelseId = UUID.randomUUID()
         val vedtaksperiodeId = UUID.randomUUID()
-        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(hendelseId, vedtaksperiodeId))
+        testRapid.sendTestMessage(overlappendeInfotrygdperioder(hendelseId, vedtaksperiodeId))
         testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, forårsaketAv = "anmodning_om_forkasting"))
         assertTrue(testRapid.inspektør.size == 0)
     }
@@ -68,14 +68,14 @@ class SpoilerE2ETest {
     @Test
     fun `lagrer i databasen`() {
         val hendelseId = UUID.randomUUID()
-        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(hendelseId))
+        testRapid.sendTestMessage(overlappendeInfotrygdperioder(hendelseId))
         assertEquals(3, tellOverlappendeInfotrygdperioderEtterInfotrygdEndring(hendelseId))
     }
 
     @Test
     fun `anmoder ikke om å forkaste vedtaksperiode hvis det er ferie som er registrert i Infotrygd`() {
         val vedtaksperiodeId = UUID.randomUUID()
-        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(UUID.randomUUID(), vedtaksperiodeId, type  = "FRIPERIODE"))
+        testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId, type  = "FRIPERIODE"))
         testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId))
         assertTrue(testRapid.inspektør.size == 0)
     }
@@ -83,7 +83,7 @@ class SpoilerE2ETest {
     @Test
     fun `anmoder om å forkaste vedtaksperiode hvis det er arbeidsgiverutbetaling som er registrert i Infotrygd`() {
         val vedtaksperiodeId = UUID.randomUUID()
-        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(UUID.randomUUID(), vedtaksperiodeId, type= "ARBEIDSGIVERUTBETALING"))
+        testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId, type= "ARBEIDSGIVERUTBETALING"))
         testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId))
         val utgående = testRapid.inspektør.message(testRapid.inspektør.size-1)
         assertEquals("anmodning_om_forkasting", utgående["@event_name"].asText())
@@ -93,7 +93,7 @@ class SpoilerE2ETest {
     @Test
     fun `anmoder om å forkaste vedtaksperiode hvis det er personutbetaling som er registrert i Infotrygd`() {
         val vedtaksperiodeId = UUID.randomUUID()
-        testRapid.sendTestMessage(overlappendeInfotrygdperiodeEtterInfotrygdEndring(UUID.randomUUID(), vedtaksperiodeId, "PERSONUTBETALING"))
+        testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId, "PERSONUTBETALING"))
         testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId))
         val utgående = testRapid.inspektør.message(testRapid.inspektør.size-1)
         assertEquals("anmodning_om_forkasting", utgående["@event_name"].asText())
@@ -103,7 +103,7 @@ class SpoilerE2ETest {
     private fun tellOverlappendeInfotrygdperioderEtterInfotrygdEndring(hendelseId: UUID): Int {
         return sessionOf(dataSource).use { session ->
             @Language("PostgreSQL")
-            val query = "SELECT COUNT(*) FROM overlappende_infotrygd_periode WHERE hendelse_id = :hendelse_id"
+            val query = "SELECT COUNT(*) FROM overlappende_infotrygd_periode p inner join overlappende_infotrygdperiode_etter_infotrygdendring vedtaksperiode on p.vedtaksperiode_id = vedtaksperiode.vedtaksperiode_id WHERE vedtaksperiode.intern_hendelse_id = :hendelse_id"
             requireNotNull(
                 session.run(queryOf(query, mapOf("hendelse_id" to hendelseId)).map { row -> row.int(1) }.asSingle)
             )
@@ -112,7 +112,7 @@ class SpoilerE2ETest {
 
 
     @Language("JSON")
-    fun overlappendeInfotrygdperiodeEtterInfotrygdEndring(
+    fun overlappendeInfotrygdperioder(
         hendelseId: UUID,
         vedtaksperiodeId: UUID = UUID.randomUUID(),
         tilstand: String = "AVVENTER_BLOKKERENDE_PERIODE"
@@ -120,30 +120,34 @@ class SpoilerE2ETest {
         """
             {
               "@id": "$hendelseId",
-              "@event_name": "overlappende_infotrygdperiode_etter_infotrygdendring",
-              "organisasjonsnummer": "123",
-              "vedtaksperiodeId": "$vedtaksperiodeId",
-              "vedtaksperiodeFom": "2023-02-01",
-              "vedtaksperiodeTom": "2023-02-12",
-              "vedtaksperiodetilstand": "$tilstand",
+              "@event_name": "overlappende_infotrygdperioder",
               "infotrygdhistorikkHendelseId": "7ff91df2-fcbe-4657-9171-709917aa043d",
-              "infotrygdperioder": [
+              "vedtaksperioder": [
                 {
-                  "fom": "2023-01-02",
-                  "tom": "2023-02-24",
-                  "type": "ARBEIDSGIVERUTBETALING",
-                  "organisasjonsnummer": "123"
-                },
-                {
-                  "fom": "2023-01-02",
-                  "tom": "2023-02-24",
-                  "type": "PERSONUTBETALING",
-                  "organisasjonsnummer": "456"
-                },
-                {
-                  "fom": "2023-01-02",
-                  "tom": "2023-02-24",
-                  "type": "FRIPERIODE"
+                  "organisasjonsnummer": "123",
+                  "vedtaksperiodeId": "$vedtaksperiodeId",
+                  "vedtaksperiodeFom": "2023-02-01",
+                  "vedtaksperiodeTom": "2023-02-12",
+                  "vedtaksperiodetilstand": "$tilstand",
+                  "infotrygdperioder": [
+                    {
+                      "fom": "2023-01-02",
+                      "tom": "2023-02-24",
+                      "type": "ARBEIDSGIVERUTBETALING",
+                      "organisasjonsnummer": "123"
+                    },
+                    {
+                      "fom": "2023-01-02",
+                      "tom": "2023-02-24",
+                      "type": "PERSONUTBETALING",
+                      "organisasjonsnummer": "456"
+                    },
+                    {
+                      "fom": "2023-01-02",
+                      "tom": "2023-02-24",
+                      "type": "FRIPERIODE"
+                    }
+                  ]
                 }
               ],
               "@opprettet": "2023-03-07T09:58:14.608965521",
@@ -163,7 +167,7 @@ class SpoilerE2ETest {
         """.trimIndent()
 
     @Language("JSON")
-    fun overlappendeInfotrygdperiodeEtterInfotrygdEndring(
+    fun overlappendeInfotrygdperioder(
         hendelseId: UUID,
         vedtaksperiodeId: UUID = UUID.randomUUID(),
         type: String,
@@ -172,19 +176,23 @@ class SpoilerE2ETest {
         """
             {
               "@id": "$hendelseId",
-              "@event_name": "overlappende_infotrygdperiode_etter_infotrygdendring",
-              "organisasjonsnummer": "123",
-              "vedtaksperiodeId": "$vedtaksperiodeId",
-              "vedtaksperiodeFom": "2023-02-01",
-              "vedtaksperiodeTom": "2023-02-12",
-              "vedtaksperiodetilstand": "$tilstand",
+              "@event_name": "overlappende_infotrygdperioder",
               "infotrygdhistorikkHendelseId": "7ff91df2-fcbe-4657-9171-709917aa043d",
-              "infotrygdperioder": [
-                {
-                  "fom": "2023-02-01",
-                  "tom": "2023-02-12",
-                  "type": "$type"
-                }
+              "vedtaksperioder": [
+                  {
+                    "organisasjonsnummer": "123",
+                    "vedtaksperiodeId": "$vedtaksperiodeId",
+                    "vedtaksperiodeFom": "2023-02-01",
+                    "vedtaksperiodeTom": "2023-02-12",
+                    "vedtaksperiodetilstand": "$tilstand",
+                    "infotrygdperioder": [
+                        {
+                            "fom": "2023-02-01",
+                            "tom": "2023-02-12",
+                            "type": "$type"
+                        }
+                    ]      
+                  }
               ],
               "aktørId": "cafebabe",
               "fødselsnummer": "12345678910"
