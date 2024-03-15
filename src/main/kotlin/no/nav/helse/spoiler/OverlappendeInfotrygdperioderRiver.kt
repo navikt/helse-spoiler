@@ -46,12 +46,17 @@ class OverlappendeInfotrygdperioderRiver(
 
         log.info("Lagret ${nyeOverlappende.size} nye perioder fra overlappende_infotrygdperioder i databasen")
 
+        var megaslackmelding = "HUFF! Det er lagt inn overlappende periode(r) i Infotrygd :sadge: Hva skal vi gjøre med dette? \n\n"
+        var skalPosteSlackMelding = false
+
         nyeOverlappende.forEach { nyPeriode ->
             if (!erPeriodeTidligereAvsluttet(nyPeriode.vedtaksperiodeTilstand)) return@forEach log.info("Lager ikke alarm etter overlappende Infotrygdperiode i tilstand ${nyPeriode.vedtaksperiodeTilstand}")
-            val slackmelding = slackmelding(nyPeriode.vedtaksperiodeId, nyPeriode.vedtaksperiodeTilstand, nyPeriode.vedtaksperiodeFom to nyPeriode.vedtaksperiodeTom)
-            log.info("Publiserer overlappende Infotrygdperiode til Slack")
-            context.publish(lagSlackmelding(slackmelding).toJson())
+            megaslackmelding += slackmelding(nyPeriode.vedtaksperiodeId, nyPeriode.vedtaksperiodeTilstand, nyPeriode.vedtaksperiodeFom to nyPeriode.vedtaksperiodeTom)
+            skalPosteSlackMelding = true
         }
+        if (!skalPosteSlackMelding) return
+        log.info("Publiserer overlappende Infotrygdperiode til Slack")
+        context.publish(lagSlackmelding(megaslackmelding).toJson())
     }
 
     private fun erPeriodeTidligereAvsluttet(vedtaksperiodetilstand: String) : Boolean {
@@ -71,8 +76,7 @@ class OverlappendeInfotrygdperioderRiver(
         vedtaksperiodetilstand: String,
         periode: Pair<LocalDate, LocalDate>
     ) : String {
-        return "Huff! Det er lagt inn en overlappende periode i Infotrygd :sadge: Hva skal vi gjøre med dette? \n\n" +
-                "Det gjelder vedtaksperiodeId $vedtaksperiodeId i tilstand $vedtaksperiodetilstand for periode ${periode.first} - ${periode.second}"
+        return "Og det gjelder vedtaksperiodeId $vedtaksperiodeId i tilstand $vedtaksperiodetilstand for periode ${periode.first} - ${periode.second} \n\n"
     }
 
     private fun lagSlackmelding(melding: String) : JsonMessage {
