@@ -26,6 +26,10 @@ spec:
     requests:
       cpu: 50m
       memory: 256Mi
+    accessPolicy:
+    outbound:
+      rules:
+        - application: spurtedu
   gcp:
     sqlInstances:
       - type: POSTGRES_14
