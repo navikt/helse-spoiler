@@ -1,7 +1,17 @@
 package no.nav.helse.spoiler
 
+import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.rapids_rivers.*
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.time.Duration
 import java.time.LocalDate
 import java.util.UUID
 
@@ -42,7 +52,8 @@ class OverlappendeInfotrygdperioderRiver(
         log.info("Mottok overlappende_infotrygdperiode_etter_infotrygdendring-melding")
 
         val overlappendeInfotrygdperiodeEtterInfotrygdendring = packet.toOverlappendeInfotrygdperioderDto()
-        val nyeOverlappende = overlappendeInfotrygdperiodeEtterInfotrygdendringDao.lagre(packet["fødselsnummer"].asText(), overlappendeInfotrygdperiodeEtterInfotrygdendring)
+        val fødselsnummer = packet["fødselsnummer"].asText()
+        val nyeOverlappende = overlappendeInfotrygdperiodeEtterInfotrygdendringDao.lagre(fødselsnummer, overlappendeInfotrygdperiodeEtterInfotrygdendring)
 
         log.info("Lagret ${nyeOverlappende.size} nye perioder fra overlappende_infotrygdperioder i databasen")
 
@@ -51,12 +62,21 @@ class OverlappendeInfotrygdperioderRiver(
 
         nyeOverlappende.forEach { nyPeriode ->
             if (!erPeriodeTidligereAvsluttet(nyPeriode.vedtaksperiodeTilstand)) return@forEach log.info("Lager ikke alarm etter overlappende Infotrygdperiode i tilstand ${nyPeriode.vedtaksperiodeTilstand}")
-            megaslackmelding += slackmelding(nyPeriode.vedtaksperiodeId, nyPeriode.vedtaksperiodeTilstand, nyPeriode.vedtaksperiodeFom to nyPeriode.vedtaksperiodeTom)
+            val firstVedtaksperiodePossiblyAmongMany = !skalPosteSlackMelding
+            megaslackmelding += slackmelding(nyPeriode.vedtaksperiodeId, nyPeriode.vedtaksperiodeTilstand, nyPeriode.vedtaksperiodeFom to nyPeriode.vedtaksperiodeTom, firstVedtaksperiodePossiblyAmongMany)
             skalPosteSlackMelding = true
         }
         if (!skalPosteSlackMelding) return
+        megaslackmelding += "Her finner du spannerlinken til vedkommende: ${fødselsnummer.spannerUrl?.let { "($it)" }}\""
         log.info("Publiserer overlappende Infotrygdperiode til Slack")
         context.publish(lagSlackmelding(megaslackmelding).toJson())
+    }
+
+    companion object {
+        private val spurteDuClient = SpurteDuClient()
+        private val String.spannerUrl get() = spurteDuClient.utveksleUrl("https://spanner.intern.nav.no/person/${this}")?.let { url ->
+            "<$url|spannerlink>"
+        }
     }
 
     private fun erPeriodeTidligereAvsluttet(vedtaksperiodetilstand: String) : Boolean {
@@ -74,12 +94,58 @@ class OverlappendeInfotrygdperioderRiver(
     private fun slackmelding(
         vedtaksperiodeId: UUID,
         vedtaksperiodetilstand: String,
-        periode: Pair<LocalDate, LocalDate>
+        periode: Pair<LocalDate, LocalDate>,
+        first: Boolean
     ) : String {
-        return "Og det gjelder vedtaksperiodeId $vedtaksperiodeId i tilstand $vedtaksperiodetilstand for periode ${periode.first} - ${periode.second} \n\n"
+        val baseText = "vedtaksperiodeId $vedtaksperiodeId i tilstand $vedtaksperiodetilstand for periode ${periode.first} - ${periode.second} \n\n"
+        if (first) return "Og det gjelder $baseText"
+        return "I tillegg til $baseText"
     }
 
     private fun lagSlackmelding(melding: String) : JsonMessage {
         return JsonMessage.newMessage("slackmelding", mapOf("melding" to melding))
+    }
+}
+
+class SpurteDuClient(private val host: String) {
+    val objectMapper: ObjectMapper = jacksonObjectMapper()
+        .registerModule(JavaTimeModule())
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+
+    constructor() : this(when (System.getenv("NAIS_CLUSTER_NAME")) {
+        "prod-gcp" -> "https://spurte-du.intern.nav.no"
+        else -> "https://spurte-du.intern.dev.nav.no"
+    })
+    private companion object {
+        private const val tbdgruppeProd = "c0227409-2085-4eb2-b487-c4ba270986a3"
+    }
+
+    fun utveksleUrl(url: String) = utveksleSpurteDu(objectMapper, mapOf(
+        "url" to url,
+        "påkrevdTilgang" to tbdgruppeProd
+    ))?.let { path ->
+        host + path
+    }
+    private fun utveksleSpurteDu(objectMapper: ObjectMapper, data: Map<String, String>): String? {
+        val httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build()
+
+        val jsonInputString = objectMapper.writeValueAsString(data)
+
+        val request = HttpRequest.newBuilder()
+            .uri(URI("http://spurtedu/skjul_meg"))
+            .timeout(Duration.ofSeconds(10))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(jsonInputString))
+            .build()
+
+        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+
+        return try {
+            objectMapper.readTree(response.body()).path("path").asText()
+        } catch (err: JsonParseException) {
+            null
+        }
     }
 }
