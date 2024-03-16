@@ -67,7 +67,7 @@ class OverlappendeInfotrygdperioderRiver(
             skalPosteSlackMelding = true
         }
         if (!skalPosteSlackMelding) return
-        megaslackmelding += "Her finner du spannerlinken til vedkommende: ${fødselsnummer.spannerUrl?.let { "($it)" }}\""
+        megaslackmelding += "Her finner du spannerlinken til vedkommende: ${fødselsnummer.spannerUrl?.let { "($it)" }} :hats-off:"
         log.info("Publiserer overlappende Infotrygdperiode til Slack")
         context.publish(lagSlackmelding(megaslackmelding).toJson())
     }
