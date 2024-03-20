@@ -57,19 +57,24 @@ class OverlappendeInfotrygdperioderRiver(
 
         log.info("Lagret ${nyeOverlappende.size} nye perioder fra overlappende_infotrygdperioder i databasen")
 
-        var megaslackmelding = "HUFF! Det er lagt inn overlappende periode(r) i Infotrygd :sadge: Hva skal vi gjøre med dette? \n\n"
-        var skalPosteSlackMelding = false
+        // lager slackmelding om overlapp
+        val overskrift = "HUFF! Det er lagt inn overlappende periode(r) i Infotrygd :sadge: Hva skal vi gjøre med dette? \n\n"
+        var slackmelding = overskrift
+        val overlappendeSomSkalISlackMelding = mutableListOf<OverlappendeInfotrygdperiodeEtterInfotrygdendringDto>()
 
         nyeOverlappende.forEach { nyPeriode ->
             if (!erPeriodeTidligereAvsluttet(nyPeriode.vedtaksperiodeTilstand)) return@forEach log.info("Lager ikke alarm etter overlappende Infotrygdperiode i tilstand ${nyPeriode.vedtaksperiodeTilstand}")
-            val firstVedtaksperiodePossiblyAmongMany = !skalPosteSlackMelding
-            megaslackmelding += slackmelding(nyPeriode.vedtaksperiodeId, nyPeriode.vedtaksperiodeTilstand, nyPeriode.vedtaksperiodeFom to nyPeriode.vedtaksperiodeTom, firstVedtaksperiodePossiblyAmongMany)
-            skalPosteSlackMelding = true
+            val førsteVedtaksperiode = overlappendeSomSkalISlackMelding.isEmpty()
+            slackmelding += slackmelding(nyPeriode.vedtaksperiodeId, nyPeriode.vedtaksperiodeTilstand, nyPeriode.vedtaksperiodeFom to nyPeriode.vedtaksperiodeTom, førsteVedtaksperiode)
+            overlappendeSomSkalISlackMelding.add(nyPeriode)
         }
-        if (!skalPosteSlackMelding) return
-        megaslackmelding += "Her finner du spannerlinken til vedkommende: ${fødselsnummer.spannerUrl?.let { "($it)" }} :hats-off:"
+        if (overlappendeSomSkalISlackMelding.isEmpty()) return
+        if (overlappendeSomSkalISlackMelding.size > 3){
+            slackmelding = overskrift + "Og det gjelder mer enn tre vedtaksperioder i perioden ${overlappendeSomSkalISlackMelding.minOf { it.vedtaksperiodeFom }} - ${overlappendeSomSkalISlackMelding.maxOf { it.vedtaksperiodeTom }} \n\n"
+        }
+        slackmelding += "Her finner du spannerlinken til vedkommende: ${fødselsnummer.spannerUrl?.let { "($it)" }} :hats-off:"
         log.info("Publiserer overlappende Infotrygdperiode til Slack")
-        context.publish(lagSlackmelding(megaslackmelding).toJson())
+        context.publish(lagSlackmelding(slackmelding).toJson())
     }
 
     companion object {
