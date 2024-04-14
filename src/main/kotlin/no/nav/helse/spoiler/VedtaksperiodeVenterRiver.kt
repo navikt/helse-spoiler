@@ -1,9 +1,6 @@
 package no.nav.helse.spoiler
 
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageContext
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
+import no.nav.helse.rapids_rivers.*
 import org.slf4j.LoggerFactory
 
 internal class VedtaksperiodeVenterRiver (
@@ -16,6 +13,7 @@ internal class VedtaksperiodeVenterRiver (
         River(rapidApplication).apply {
             validate { it.demandValue("@event_name", "vedtaksperiode_venter") }
             validate { it.rejectValue("@forårsaket_av.event_name", "anmodning_om_forkasting") }
+            validate { it.requireKey("venterPå.vedtaksperiodeId") }
             validate { it.requireKey("venterPå.venteårsak.hva") }
             validate { it.interestedIn("venterPå.venteårsak.hvorfor") }
             validate { it.requireKey(
@@ -29,13 +27,20 @@ internal class VedtaksperiodeVenterRiver (
         }.register(this)
     }
 
+    override fun onError(problems: MessageProblems, context: MessageContext) {
+        logger.info("Håndterer ikke vedtaksperiode_venter pga. problem: se sikker logg")
+        sikkerlogg.info("Håndterer ikke vedtaksperiode_venter pga. problem: {}", problems.toExtendedReport())
+    }
+
+    private fun venterPåSegSelvOgInntektsmelding(vedtaksperiodeVenter: VedtaksperiodeVenterDto) =
+        vedtaksperiodeVenter.venterPå.hva == "INNTEKTSMELDING" && vedtaksperiodeVenter.vedtaksperiodeId == vedtaksperiodeVenter.venterPå.vedtaksperiodeId
+
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         val vedtaksperiodeVenter = packet.toVedtaksperiodeVenterDto()
-        val venterPåInntektsmelding = vedtaksperiodeVenter.venterPå.hva == "INNTEKTSMELDING"
-        if (!venterPåInntektsmelding) return
+        if (!venterPåSegSelvOgInntektsmelding(vedtaksperiodeVenter)) return
 
         val overlappendeInfortrygdperioder = overlappendeInfotrygdperiodeEtterInfotrygdendringDao.finn(vedtaksperiodeVenter.vedtaksperiodeId)
-        if(overlappendeInfortrygdperioder.isEmpty()) return
+        if (overlappendeInfortrygdperioder.isEmpty()) return
 
         logger.info("Oppdaget en overlappende infotrydperiode hos en vedtaksperiode som venter på inntektsmelding, anmoder om å forkaste")
 
@@ -45,6 +50,7 @@ internal class VedtaksperiodeVenterRiver (
             "organisasjonsnummer" to vedtaksperiodeVenter.organisasjonsnummer,
             "vedtaksperiodeId" to vedtaksperiodeVenter.vedtaksperiodeId,
             "vedtaksperiodeVenter" to mapOf(
+                "ventetPåHvem" to vedtaksperiodeVenter.venterPå.vedtaksperiodeId,
                 "ventetPåHva" to vedtaksperiodeVenter.venterPå.hva,
                 "ventetPåHvorfor" to vedtaksperiodeVenter.venterPå.hvorfor,
                 "ventetSiden" to vedtaksperiodeVenter.ventetSiden

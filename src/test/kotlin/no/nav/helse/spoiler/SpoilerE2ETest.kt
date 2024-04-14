@@ -40,7 +40,7 @@ class SpoilerE2ETest {
         val hendelseId = UUID.randomUUID()
         val vedtaksperiodeId = UUID.randomUUID()
         testRapid.sendTestMessage(overlappendeInfotrygdperioder(hendelseId, vedtaksperiodeId))
-        testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, venterPå = "INNTEKTSMELDING"))
+        testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, venterPåVedtaksperiodeId = vedtaksperiodeId, venterPå = "INNTEKTSMELDING"))
         val utgående = testRapid.inspektør.message(testRapid.inspektør.size-1)
 
         assertEquals("anmodning_om_forkasting", utgående["@event_name"].asText())
@@ -93,7 +93,7 @@ class SpoilerE2ETest {
     fun `anmoder om å forkaste vedtaksperiode hvis det er arbeidsgiverutbetaling som er registrert i Infotrygd`() {
         val vedtaksperiodeId = UUID.randomUUID()
         testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId, type= "ARBEIDSGIVERUTBETALING"))
-        testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, venterPå = "INNTEKTSMELDING"))
+        testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, venterPåVedtaksperiodeId = vedtaksperiodeId, venterPå = "INNTEKTSMELDING"))
         val utgående = testRapid.inspektør.message(testRapid.inspektør.size-1)
         assertEquals("anmodning_om_forkasting", utgående["@event_name"].asText())
         assertEquals(vedtaksperiodeId, utgående["vedtaksperiodeId"].asText().let { UUID.fromString(it) })
@@ -103,7 +103,7 @@ class SpoilerE2ETest {
     fun `anmoder om å forkaste vedtaksperiode hvis det er personutbetaling som er registrert i Infotrygd`() {
         val vedtaksperiodeId = UUID.randomUUID()
         testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId, "PERSONUTBETALING"))
-        testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, venterPå = "INNTEKTSMELDING"))
+        testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, venterPåVedtaksperiodeId = vedtaksperiodeId, venterPå = "INNTEKTSMELDING"))
         val utgående = testRapid.inspektør.message(testRapid.inspektør.size-1)
         assertEquals("anmodning_om_forkasting", utgående["@event_name"].asText())
         assertEquals(vedtaksperiodeId, utgående["vedtaksperiodeId"].asText().let { UUID.fromString(it) })
