@@ -34,7 +34,7 @@ spec:
         - application: spurtedu
   gcp:
     sqlInstances:
-      - type: POSTGRES_14
+      - type: POSTGRES_15
         diskAutoresize: true
         tier: db-custom-4-16384
         databases:
