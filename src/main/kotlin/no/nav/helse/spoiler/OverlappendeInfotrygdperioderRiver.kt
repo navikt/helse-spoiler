@@ -78,6 +78,7 @@ class OverlappendeInfotrygdperioderRiver(
     }
 
     companion object {
+        private const val SLACKKANAL_OVERLAPPENDE_UTBETALINGER = "C072AFA7DAN"
         private val spurteDuClient = SpurteDuClient()
         private val String.spannerUrl get() = spurteDuClient.utveksleUrl("https://spanner.intern.nav.no/person/${this}")?.let { url ->
             "<$url|spannerlink>"
@@ -108,7 +109,10 @@ class OverlappendeInfotrygdperioderRiver(
     }
 
     private fun lagSlackmelding(melding: String) : JsonMessage {
-        return JsonMessage.newMessage("slackmelding", mapOf("melding" to melding))
+        return JsonMessage.newMessage("slackmelding", mapOf(
+            "kanal" to SLACKKANAL_OVERLAPPENDE_UTBETALINGER,
+            "melding" to melding
+        ))
     }
 }
 
