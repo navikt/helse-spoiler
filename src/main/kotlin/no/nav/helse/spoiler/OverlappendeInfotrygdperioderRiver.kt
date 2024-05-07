@@ -110,7 +110,7 @@ class OverlappendeInfotrygdperioderRiver(
 
     private fun lagSlackmelding(melding: String) : JsonMessage {
         return JsonMessage.newMessage("slackmelding", mapOf(
-            "kanal" to SLACKKANAL_OVERLAPPENDE_UTBETALINGER,
+            "channel" to SLACKKANAL_OVERLAPPENDE_UTBETALINGER,
             "melding" to melding
         ))
     }
