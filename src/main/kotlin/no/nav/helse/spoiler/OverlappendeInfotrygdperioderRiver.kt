@@ -36,7 +36,7 @@ class OverlappendeInfotrygdperioderRiver(
                         require("fom", JsonNode::asLocalDate)
                         require("fom", JsonNode::asLocalDate)
                         requireKey("type")
-                        requireKey("organisasjonsnummer")
+                        interestedIn("organisasjonsnummer")
                     }
                 }
             }

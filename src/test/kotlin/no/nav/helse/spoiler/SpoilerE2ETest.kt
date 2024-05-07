@@ -154,7 +154,8 @@ class SpoilerE2ETest {
                     {
                       "fom": "2023-01-02",
                       "tom": "2023-02-24",
-                      "type": "FRIPERIODE"
+                      "type": "FRIPERIODE",
+                      "organisasjonsnummer": null
                     }
                   ]
                 }
