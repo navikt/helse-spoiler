@@ -122,7 +122,7 @@ class SpurteDuClient(private val host: String) {
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
     constructor() : this(when (System.getenv("NAIS_CLUSTER_NAME")) {
-        "prod-gcp" -> "https://spurte-du.intern.nav.no"
+        "prod-gcp" -> "https://spurte-du.ansatt.nav.no"
         else -> "https://spurte-du.intern.dev.nav.no"
     })
     private companion object {
