@@ -18,7 +18,7 @@ class SpoilerE2ETest {
     private val dataSource = setupDataSourceMedFlyway(embeddedPostgres)
     private val overlappendeInfotrygdperiodeEtterInfotrygdendringDao = OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(dataSource)
     private val testRapid = TestRapid().apply {
-        OverlappendeInfotrygdperioderRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
+        OverlappendeInfotrygdperioderRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao, null)
         VedtaksperiodeVenterRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
     }
 

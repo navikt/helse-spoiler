@@ -1,5 +1,10 @@
 package no.nav.helse.spoiler
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.azure.AzureToken
+import com.github.navikt.tbd_libs.azure.AzureTokenProvider
+import com.github.navikt.tbd_libs.spurtedu.SpurteDuClient
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import org.slf4j.LoggerFactory
@@ -20,8 +25,21 @@ fun launchApp(env: Map<String, String>) {
     val dataSource = dataSourceBuilder.getDataSource()
     val overlappendeInfotrygdperiodeEtterInfotrygdendringDao = OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(dataSource)
 
+    val spurteDuClient = SpurteDuClient(
+        objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule()),
+        tokenProvider = object : AzureTokenProvider {
+            override fun bearerToken(scope: String): AzureToken {
+                TODO("Not yet implemented")
+            }
+
+            override fun onBehalfOfToken(scope: String, token: String): AzureToken {
+                TODO("Not yet implemented")
+            }
+        }
+    )
+
     RapidApplication.create(env).apply {
-        OverlappendeInfotrygdperioderRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
+        OverlappendeInfotrygdperioderRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao, spurteDuClient)
         VedtaksperiodeVenterRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
         VedtaksperiodeForkastetRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
         OppsummeringTilSlackRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
