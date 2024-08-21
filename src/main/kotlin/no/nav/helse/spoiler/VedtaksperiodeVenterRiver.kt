@@ -32,17 +32,19 @@ internal class VedtaksperiodeVenterRiver (
         sikkerlogg.info("Håndterer ikke vedtaksperiode_venter pga. problem: {}", problems.toExtendedReport())
     }
 
-    private fun venterPåSegSelvOgInntektsmelding(vedtaksperiodeVenter: VedtaksperiodeVenterDto) =
-        vedtaksperiodeVenter.venterPå.hva == "INNTEKTSMELDING" && vedtaksperiodeVenter.vedtaksperiodeId == vedtaksperiodeVenter.venterPå.vedtaksperiodeId
+    private fun skalAnmodes(vedtaksperiodeVenter: VedtaksperiodeVenterDto): Boolean {
+        if (vedtaksperiodeVenter.vedtaksperiodeId != vedtaksperiodeVenter.venterPå.vedtaksperiodeId) return false // Anmoder kun de som selv er en propp
+        return vedtaksperiodeVenter.venterPå.hva in setOf("INNTEKTSMELDING", "HJELP") // Anmoder kun de som venter på IM, eller er helt stuck
+    }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         val vedtaksperiodeVenter = packet.toVedtaksperiodeVenterDto()
-        if (!venterPåSegSelvOgInntektsmelding(vedtaksperiodeVenter)) return
+        if (!skalAnmodes(vedtaksperiodeVenter)) return
 
         val overlappendeInfortrygdperioder = overlappendeInfotrygdperiodeEtterInfotrygdendringDao.finn(vedtaksperiodeVenter.vedtaksperiodeId)
         if (overlappendeInfortrygdperioder.isEmpty()) return
 
-        logger.info("Oppdaget en overlappende infotrydperiode hos en vedtaksperiode som venter på inntektsmelding, anmoder om å forkaste")
+        logger.info("Oppdaget en overlappende infotrydperiode hos en vedtaksperiode som venter på ${vedtaksperiodeVenter.venterPå.hva}, anmoder om å forkaste")
 
         context.publish(JsonMessage.newMessage("anmodning_om_forkasting", mapOf(
             "fødselsnummer" to vedtaksperiodeVenter.fødselsnummer,

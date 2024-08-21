@@ -109,6 +109,40 @@ class SpoilerE2ETest {
         assertEquals(vedtaksperiodeId, utgående["vedtaksperiodeId"].asText().let { UUID.fromString(it) })
     }
 
+    @Test
+    fun `anmoder ikke om vi venter på noe som ikke er IM eller Hjelp`() {
+        val vedtaksperiodeId = UUID.randomUUID()
+        testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId, "PERSONUTBETALING"))
+        testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, venterPåVedtaksperiodeId = vedtaksperiodeId, venterPå = "NOE_SPRØTT"))
+        assertEquals(0, testRapid.inspektør.size)
+    }
+
+    @Test
+    fun `anmoder ikke om vi venter på en annen periode som venter på IM`() {
+        val vedtaksperiodeId = UUID.randomUUID()
+        testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId, "PERSONUTBETALING"))
+        testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, venterPåVedtaksperiodeId = UUID.randomUUID(), venterPå = "INNTEKTSMELDING"))
+        assertEquals(0, testRapid.inspektør.size)
+    }
+
+    @Test
+    fun `anmoder ikke om vi venter på en annen periode som venter på Hjelp`() {
+        val vedtaksperiodeId = UUID.randomUUID()
+        testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId, "PERSONUTBETALING"))
+        testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, venterPåVedtaksperiodeId = UUID.randomUUID(), venterPå = "HJELP"))
+        assertEquals(0, testRapid.inspektør.size)
+    }
+
+    @Test
+    fun `anmoder om vi venter på hjelp`() {
+        val vedtaksperiodeId = UUID.randomUUID()
+        testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId, "PERSONUTBETALING"))
+        testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, venterPåVedtaksperiodeId = vedtaksperiodeId, venterPå = "HJELP"))
+        val utgående = testRapid.inspektør.message(testRapid.inspektør.size-1)
+        assertEquals("anmodning_om_forkasting", utgående["@event_name"].asText())
+        assertEquals(vedtaksperiodeId, utgående["vedtaksperiodeId"].asText().let { UUID.fromString(it) })
+    }
+
     private fun tellOverlappendeInfotrygdperioderEtterInfotrygdEndring(hendelseId: UUID): Int {
         return sessionOf(dataSource).use { session ->
             @Language("PostgreSQL")
