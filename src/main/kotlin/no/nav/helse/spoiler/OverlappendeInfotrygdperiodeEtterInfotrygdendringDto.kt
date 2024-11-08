@@ -12,7 +12,6 @@ import java.util.*
 
 data class OverlappendeInfotrygdperiodeEtterInfotrygdendringDto(
     val fødelsnummer: String,
-    val aktørId: String,
     val hendelseId: UUID,
     val opprettet: LocalDateTime,
     val vedtaksperiodeId: UUID,
@@ -37,7 +36,6 @@ fun JsonMessage.toOverlappendeInfotrygdperioderDto(): List<OverlappendeInfotrygd
     val id = this["@id"].asText().toUUID()
     val opprettet = this["@opprettet"].asLocalDateTime()
     val fødelsnummer = this["fødselsnummer"].asText()
-    val aktørId = this["aktørId"].asText()
     val infotrygdHendelseId = this["infotrygdhistorikkHendelseId"].asText().toUUID()
     return this["vedtaksperioder"].map { vedtaksperiode ->
         val vedtaksperiodeId = vedtaksperiode.path("vedtaksperiodeId").asText().toUUID()
@@ -49,7 +47,6 @@ fun JsonMessage.toOverlappendeInfotrygdperioderDto(): List<OverlappendeInfotrygd
             vedtaksperiodeTom = vedtaksperiode.path("vedtaksperiodeTom").asLocalDate(),
             vedtaksperiodeTilstand = vedtaksperiode.path("vedtaksperiodetilstand").asText(),
             fødelsnummer = fødelsnummer,
-            aktørId = aktørId,
             organisasjonsnummer = vedtaksperiode.path("organisasjonsnummer").asText(),
             infotrygdhistorikkHendelseId = infotrygdHendelseId,
             infotrygdperioder = vedtaksperiode.path("infotrygdperioder").toInfotrygdperioder(vedtaksperiodeId)

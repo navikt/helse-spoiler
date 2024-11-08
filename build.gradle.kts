@@ -51,12 +51,10 @@ dependencies {
 }
 
 tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = javaVersion
-    }
-
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = javaVersion
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(javaVersion)
+        }
     }
 
     withType<Test> {

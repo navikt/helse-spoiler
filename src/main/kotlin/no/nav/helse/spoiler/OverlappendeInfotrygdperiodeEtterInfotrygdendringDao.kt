@@ -20,8 +20,8 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(private val dataSourc
 
                 @Language("PostgreSQL")
                 val statement = """
-                     INSERT INTO overlappende_infotrygdperiode_etter_infotrygdendring(intern_hendelse_id, opprettet, fodselsnummer, aktor_id, organisasjonsnummer, vedtaksperiode_id, vedtaksperiode_fom, vedtaksperiode_tom, vedtaksperiode_tilstand, infotrygdhistorikk_hendelseId)
-                     VALUES (:hendelseId, :opprettet, :fodselsnummer, :aktorId, :organisasjonsnummer, :vedtaksperiodeId, :vedtaksperiodeFom, :vedtaksperiodeTom, :vedtaksperiodeTilstand, :infotrygdhistorikkHendelseId)
+                     INSERT INTO overlappende_infotrygdperiode_etter_infotrygdendring(intern_hendelse_id, opprettet, fodselsnummer, organisasjonsnummer, vedtaksperiode_id, vedtaksperiode_fom, vedtaksperiode_tom, vedtaksperiode_tilstand, infotrygdhistorikk_hendelseId)
+                     VALUES (:hendelseId, :opprettet, :fodselsnummer, :organisasjonsnummer, :vedtaksperiodeId, :vedtaksperiodeFom, :vedtaksperiodeTom, :vedtaksperiodeTilstand, :infotrygdhistorikkHendelseId)
                 """
                 overlappendeInfotrygdperioder.forEach { vedtaksperiode ->
                     session.run(queryOf(
@@ -30,7 +30,6 @@ class OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(private val dataSourc
                             "hendelseId" to vedtaksperiode.hendelseId,
                             "opprettet" to vedtaksperiode.opprettet,
                             "fodselsnummer" to vedtaksperiode.fødelsnummer,
-                            "aktorId" to vedtaksperiode.aktørId,
                             "organisasjonsnummer" to vedtaksperiode.organisasjonsnummer,
                             "vedtaksperiodeId" to vedtaksperiode.vedtaksperiodeId,
                             "vedtaksperiodeFom" to vedtaksperiode.vedtaksperiodeFom,

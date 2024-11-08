@@ -21,7 +21,7 @@ class OverlappendeInfotrygdperioderRiver(
                 it.demandValue("@event_name", "overlappende_infotrygdperioder")
                 it.require("@opprettet", JsonNode::asLocalDateTime)
                 it.require("@id") { id -> UUID.fromString(id.asText()) }
-                it.requireKey("fødselsnummer", "aktørId")
+                it.requireKey("fødselsnummer")
                 it.require("infotrygdhistorikkHendelseId") { id -> UUID.fromString(id.asText()) }
                 it.requireArray("vedtaksperioder") {
                     require("vedtaksperiodeId") { id -> UUID.fromString(id.asText()) }

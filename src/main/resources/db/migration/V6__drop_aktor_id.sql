@@ -1,0 +1,1 @@
+alter table overlappende_infotrygdperiode_etter_infotrygdendring drop column aktor_id;
