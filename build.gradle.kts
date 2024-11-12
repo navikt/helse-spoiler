@@ -3,6 +3,7 @@ val junitJupiterVersion = "5.11.3"
 val flywayVersion = "10.4.1"
 val hikariCPVersion = "5.1.0"
 val kotliQueryVersion = "1.9.0"
+val rapidsAndRiversVersion = "2024111211071731406062.648687519469"
 val tbdLibsVersion = "2024.11.12-11.09-16cf2599"
 
 plugins {
@@ -27,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.navikt:rapids-and-rivers:2024111211071731406062.648687519469")
+    implementation("com.github.navikt:rapids-and-rivers:$rapidsAndRiversVersion")
 
     implementation("com.github.navikt.tbd-libs:spurtedu-client:$tbdLibsVersion")
 
