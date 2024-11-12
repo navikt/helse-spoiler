@@ -3,7 +3,7 @@ val ktorVersion = "2.3.7"
 val logbackClassicVersion = "1.4.14"
 val logbackEncoderVersion = "7.4"
 
-val junitJupiterVersion = "5.10.2"
+val junitJupiterVersion = "5.11.3"
 
 val flywayVersion = "10.4.1"
 val hikariCPVersion = "5.1.0"
@@ -46,8 +46,8 @@ dependencies {
 
     testImplementation("org.testcontainers:postgresql:$testContainerPostgresqlVersion")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 kotlin {
