@@ -19,7 +19,6 @@ internal class VedtaksperiodeVenterRiver (
             validate { it.requireKey(
                 "@id",
                 "fødselsnummer",
-                "aktørId",
                 "organisasjonsnummer",
                 "vedtaksperiodeId",
                 "ventetSiden"
@@ -48,7 +47,6 @@ internal class VedtaksperiodeVenterRiver (
 
         context.publish(JsonMessage.newMessage("anmodning_om_forkasting", mapOf(
             "fødselsnummer" to vedtaksperiodeVenter.fødselsnummer,
-            "aktørId" to vedtaksperiodeVenter.aktørId,
             "organisasjonsnummer" to vedtaksperiodeVenter.organisasjonsnummer,
             "vedtaksperiodeId" to vedtaksperiodeVenter.vedtaksperiodeId,
             "vedtaksperiodeVenter" to mapOf(

@@ -205,7 +205,6 @@ class SpoilerE2ETest {
                   "image": "ghcr.io/navikt/helse-spleis/spleis:9407553"
                 }
               ],
-              "aktørId": "cafebabe",
               "fødselsnummer": "12345678910"
             }
         """.trimIndent()
@@ -238,7 +237,6 @@ class SpoilerE2ETest {
                     ]      
                   }
               ],
-              "aktørId": "cafebabe",
               "fødselsnummer": "12345678910"
             }
         """.trimIndent()
@@ -266,7 +264,6 @@ class SpoilerE2ETest {
           },
           "@id": "${UUID.randomUUID()}",
           "fødselsnummer": "12345678910",
-          "aktørId": "cafebabe",
           "@forårsaket_av": {
             "event_name": "$forårsaketAv"
           }
