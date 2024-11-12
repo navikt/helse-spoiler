@@ -50,13 +50,13 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 }
 
-tasks {
-    java {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(javaVersion)
-        }
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of("21"))
     }
+}
 
+tasks {
     withType<Test> {
         useJUnitPlatform()
         testLogging {
