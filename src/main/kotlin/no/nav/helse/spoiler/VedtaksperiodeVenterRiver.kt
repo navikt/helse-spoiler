@@ -1,6 +1,12 @@
 package no.nav.helse.spoiler
 
-import no.nav.helse.rapids_rivers.*
+import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
+import com.github.navikt.tbd_libs.rapids_and_rivers.River
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
+import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
 
 internal class VedtaksperiodeVenterRiver (
@@ -26,7 +32,7 @@ internal class VedtaksperiodeVenterRiver (
         }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext) {
+    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
         logger.info("Håndterer ikke vedtaksperiode_venter pga. problem: se sikker logg")
         sikkerlogg.info("Håndterer ikke vedtaksperiode_venter pga. problem: {}", problems.toExtendedReport())
     }
@@ -36,7 +42,7 @@ internal class VedtaksperiodeVenterRiver (
         return vedtaksperiodeVenter.venterPå.hva in setOf("INNTEKTSMELDING", "HJELP") // Anmoder kun de som venter på IM, eller er helt stuck
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         val vedtaksperiodeVenter = packet.toVedtaksperiodeVenterDto()
         if (!skalAnmodes(vedtaksperiodeVenter)) return
 

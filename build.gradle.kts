@@ -1,16 +1,9 @@
-val javaVersion = "21"
-val ktorVersion = "2.3.7"
-val logbackClassicVersion = "1.4.14"
-val logbackEncoderVersion = "7.4"
-
 val junitJupiterVersion = "5.11.3"
 
 val flywayVersion = "10.4.1"
 val hikariCPVersion = "5.1.0"
-val postgresqlVersion = "42.7.1"
 val kotliQueryVersion = "1.9.0"
-val testContainerPostgresqlVersion = "1.19.3"
-val tbdLibsVersion = "2024.05.31-08.02-2c3441c1"
+val tbdLibsVersion = "2024.11.12-11.09-16cf2599"
 
 plugins {
     kotlin("jvm") version "2.0.21"
@@ -34,7 +27,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.navikt:rapids-and-rivers:2024010209171704183456.6d035b91ffb4")
+    implementation("com.github.navikt:rapids-and-rivers:2024111211071731406062.648687519469")
 
     implementation("com.github.navikt.tbd-libs:spurtedu-client:$tbdLibsVersion")
 
@@ -44,7 +37,8 @@ dependencies {
     implementation("org.postgresql:postgresql:42.7.2")
     implementation("com.github.seratch:kotliquery:$kotliQueryVersion")
 
-    testImplementation("org.testcontainers:postgresql:$testContainerPostgresqlVersion")
+    testImplementation("com.github.navikt.tbd-libs:postgres-testdatabaser:$tbdLibsVersion")
+    testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -62,6 +56,11 @@ tasks {
         testLogging {
             events("passed", "skipped", "failed")
         }
+
+        systemProperty("junit.jupiter.execution.parallel.enabled", "true")
+        systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
+        systemProperty("junit.jupiter.execution.parallel.config.strategy", "fixed")
+        systemProperty("junit.jupiter.execution.parallel.config.fixed.parallelism", "4")
     }
 
     withType<Jar> {

@@ -1,38 +1,39 @@
 package no.nav.helse.spoiler
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
+import com.github.navikt.tbd_libs.test_support.CleanupStrategy
+import com.github.navikt.tbd_libs.test_support.DatabaseContainers
+import com.github.navikt.tbd_libs.test_support.TestDataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.intellij.lang.annotations.Language
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import java.util.*
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SpoilerE2ETest {
-    private val embeddedPostgres = embeddedPostgres()
-    private val dataSource = setupDataSourceMedFlyway(embeddedPostgres)
-    private val overlappendeInfotrygdperiodeEtterInfotrygdendringDao = OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(dataSource)
-    private val testRapid = TestRapid().apply {
-        OverlappendeInfotrygdperioderRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao, null)
-        VedtaksperiodeVenterRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
-    }
+val databaseContainer = DatabaseContainers.container("spoiler", CleanupStrategy.tables("overlappende_infotrygd_periode,overlappende_infotrygdperiode_etter_infotrygdendring"))
 
-    @AfterAll
-    fun tearDown() {
-        testRapid.stop()
-        dataSource.connection.close()
-        embeddedPostgres.close()
+class SpoilerE2ETest {
+    private lateinit var testDataSource: TestDataSource
+    private lateinit var testRapid: TestRapid
+    private val dataSource get() = testDataSource.ds
+
+    @BeforeEach
+    fun setup() {
+        testDataSource = databaseContainer.nyTilkobling()
+        val overlappendeInfotrygdperiodeEtterInfotrygdendringDao = OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(dataSource)
+        testRapid = TestRapid().apply {
+            OverlappendeInfotrygdperioderRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao, null)
+            VedtaksperiodeVenterRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
+        }
     }
 
     @AfterEach
     fun reset() {
-        dataSource.resetDatabase()
-        testRapid.reset()
+        databaseContainer.droppTilkobling(testDataSource)
     }
 
     @Test
