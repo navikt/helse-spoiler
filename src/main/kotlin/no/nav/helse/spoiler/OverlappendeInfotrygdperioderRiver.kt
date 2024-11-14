@@ -25,8 +25,8 @@ class OverlappendeInfotrygdperioderRiver(
 ) : River.PacketListener {
     init {
         River(rapidApplication).apply {
+            precondition { it.requireValue("@event_name", "overlappende_infotrygdperioder") }
             validate {
-                it.demandValue("@event_name", "overlappende_infotrygdperioder")
                 it.require("@opprettet", JsonNode::asLocalDateTime)
                 it.require("@id") { id -> UUID.fromString(id.asText()) }
                 it.requireKey("fødselsnummer")

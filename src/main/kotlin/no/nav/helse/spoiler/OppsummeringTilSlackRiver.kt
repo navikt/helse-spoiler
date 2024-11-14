@@ -17,14 +17,14 @@ internal class OppsummeringTilSlackRiver (
 
     init {
         River(rapidApplication).apply {
-            validate { it.demandValue("@event_name", "identifiser_overlappende_perioder") }
+            precondition { it.requireValue("@event_name", "identifiser_overlappende_perioder") }
         }.register(this)
 
         River(rapidApplication).apply {
-            validate {
-                it.demandValue("@event_name", "hel_time")
-                it.demandValue("time", 9)
-                it.demandValue("dagIUke", 1)
+            precondition {
+                it.requireValue("@event_name", "hel_time")
+                it.requireValue("time", 9)
+                it.requireValue("dagIUke", 1)
             }
         }.register(this)
     }
