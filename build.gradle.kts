@@ -1,7 +1,7 @@
 val junitJupiterVersion = "5.11.3"
 
 val flywayVersion = "10.4.1"
-val hikariCPVersion = "5.1.0"
+val hikariCPVersion = "6.1.0"
 val kotliQueryVersion = "1.9.0"
 val rapidsAndRiversVersion = "2024111509181731658731.11009b44c672"
 val tbdLibsVersion = "2024.11.15-09.09-08ca346b"
