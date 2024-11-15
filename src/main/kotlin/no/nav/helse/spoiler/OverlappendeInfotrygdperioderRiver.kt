@@ -86,7 +86,7 @@ class OverlappendeInfotrygdperioderRiver(
     companion object {
         private const val SLACKKANAL_OVERLAPPENDE_UTBETALINGER = "C072AFA7DAN"
         private fun String.spannerUrl(spurteDuClient: SpurteDuClient?, tilgang: String = tbdgruppeProd) = spurteDuClient?.let {
-            spannerlink(spurteDuClient, this).let { url ->
+            spannerlink(spurteDuClient, this, tilgang).let { url ->
                 "<$url|spannerlink>"
             }
         }
@@ -126,7 +126,7 @@ private val objectMapper: ObjectMapper = jacksonObjectMapper().registerModule(Ja
 private const val tbdgruppeProd = "c0227409-2085-4eb2-b487-c4ba270986a3"
 private const val tbdSpannerProd = "382f42f4-f46b-40c1-849b-38d6b5a1f639"
 
-fun spannerlink(spurteDuClient: SpurteDuClient, fnr: String, tilgang: String = tbdgruppeProd): String {
+fun spannerlink(spurteDuClient: SpurteDuClient, fnr: String, tilgang: String): String {
     val payload = SkjulRequest.SkjulTekstRequest(
         tekst = objectMapper.writeValueAsString(mapOf(
             "ident" to fnr,
