@@ -1,10 +1,11 @@
 val junitJupiterVersion = "5.11.3"
 
-val flywayVersion = "10.4.1"
+val flywayVersion = "10.21.0"
 val hikariCPVersion = "6.1.0"
 val kotliQueryVersion = "1.9.0"
 val rapidsAndRiversVersion = "2024111509181731658731.11009b44c672"
 val tbdLibsVersion = "2024.11.15-09.09-08ca346b"
+val postgresqlVersion = "42.7.4"
 
 plugins {
     kotlin("jvm") version "2.0.21"
@@ -32,10 +33,9 @@ dependencies {
 
     implementation("com.github.navikt.tbd-libs:spurtedu-client:$tbdLibsVersion")
 
-    implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     implementation("com.zaxxer:HikariCP:$hikariCPVersion")
-    implementation("org.postgresql:postgresql:42.7.2")
+    implementation("org.postgresql:postgresql:$postgresqlVersion")
     implementation("com.github.seratch:kotliquery:$kotliQueryVersion")
 
     testImplementation("com.github.navikt.tbd-libs:postgres-testdatabaser:$tbdLibsVersion")
