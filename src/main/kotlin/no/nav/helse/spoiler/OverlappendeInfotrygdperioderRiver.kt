@@ -76,14 +76,16 @@ class OverlappendeInfotrygdperioderRiver(
         if (overlappendeSomSkalISlackMelding.size > 3){
             slackmelding = overskrift + "Og det gjelder mer enn tre vedtaksperioder i perioden ${overlappendeSomSkalISlackMelding.minOf { it.vedtaksperiodeFom }} - ${overlappendeSomSkalISlackMelding.maxOf { it.vedtaksperiodeTom }} \n\n"
         }
-        slackmelding += "Her finner du spannerlinken til vedkommende: ${fødselsnummer.spannerUrl(spurteDuClient)?.let { "($it)" }} :hats-off:"
+        val spannerUrlTbd = fødselsnummer.spannerUrl(spurteDuClient, tbdgruppeProd)
+        val spannerUrlSaksbehandler = fødselsnummer.spannerUrl(spurteDuClient, tbdSpannerProd)
+        slackmelding += "Her finner du spannerlinken til vedkommende:${spannerUrlTbd?.let { "\n$it (for utviklere)" }}${spannerUrlSaksbehandler?.let { "\n$it (for saksbehandlere)" }}\n:hats-off:"
         log.info("Publiserer overlappende Infotrygdperiode til Slack")
         context.publish(lagSlackmelding(slackmelding).toJson())
     }
 
     companion object {
         private const val SLACKKANAL_OVERLAPPENDE_UTBETALINGER = "C072AFA7DAN"
-        private fun String.spannerUrl(spurteDuClient: SpurteDuClient?) = spurteDuClient?.let {
+        private fun String.spannerUrl(spurteDuClient: SpurteDuClient?, tilgang: String = tbdgruppeProd) = spurteDuClient?.let {
             spannerlink(spurteDuClient, this).let { url ->
                 "<$url|spannerlink>"
             }
@@ -122,14 +124,15 @@ class OverlappendeInfotrygdperioderRiver(
 }
 private val objectMapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
 private const val tbdgruppeProd = "c0227409-2085-4eb2-b487-c4ba270986a3"
+private const val tbdSpannerProd = "382f42f4-f46b-40c1-849b-38d6b5a1f639"
 
-fun spannerlink(spurteDuClient: SpurteDuClient, fnr: String): String {
+fun spannerlink(spurteDuClient: SpurteDuClient, fnr: String, tilgang: String = tbdgruppeProd): String {
     val payload = SkjulRequest.SkjulTekstRequest(
         tekst = objectMapper.writeValueAsString(mapOf(
             "ident" to fnr,
             "identtype" to "FNR"
         )),
-        påkrevdTilgang = tbdgruppeProd
+        påkrevdTilgang = tilgang
     )
 
     val spurteDuLink = spurteDuClient.skjul(payload)
