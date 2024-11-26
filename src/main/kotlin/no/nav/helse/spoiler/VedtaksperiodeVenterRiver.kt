@@ -1,5 +1,6 @@
 package no.nav.helse.spoiler
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -11,6 +12,8 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
+import java.util.UUID
 
 internal class VedtaksperiodeVenterRiver (
     rapidApplication: RapidsConnection,
@@ -32,32 +35,6 @@ internal class VedtaksperiodeVenterRiver (
                 }
             }
         }.register(this)
-
-        // todo: deprecated river
-        River(rapidApplication).apply {
-            precondition { it.requireValue("@event_name", "vedtaksperiode_venter") }
-            precondition { it.forbidValue("@forårsaket_av.event_name", "anmodning_om_forkasting") }
-            validate { it.requireKey("venterPå.vedtaksperiodeId") }
-            validate { it.requireKey("venterPå.venteårsak.hva") }
-            validate { it.interestedIn("venterPå.venteårsak.hvorfor") }
-            validate { it.requireKey(
-                "@id",
-                "fødselsnummer",
-                "organisasjonsnummer",
-                "vedtaksperiodeId",
-                "ventetSiden"
-            ) }
-        }.register(object : River.PacketListener {
-            override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
-                logger.info("Håndterer ikke vedtaksperiode_venter pga. problem: se sikker logg")
-                sikkerlogg.info("Håndterer ikke vedtaksperiode_venter pga. problem: {}", problems.toExtendedReport())
-            }
-
-            override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-                val vedtaksperiodeVenter = packet.toVedtaksperiodeVenterDto()
-                håndterVedtaksperiodeVenter(packet["fødselsnummer"].asText(), vedtaksperiodeVenter, context)
-            }
-        })
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
@@ -102,4 +79,24 @@ internal class VedtaksperiodeVenterRiver (
         val logger = LoggerFactory.getLogger(VedtaksperiodeVenterRiver::class.java)
         private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
     }
+}
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+private data class VedtaksperiodeVenterDto(
+    val organisasjonsnummer: String,
+    val vedtaksperiodeId: UUID,
+    val ventetSiden: LocalDateTime,
+    val venterPå: VenterPå
+) {
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class VenterPå(
+        val vedtaksperiodeId: UUID,
+        val venteårsak: Venteårsak
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class Venteårsak(
+        val hva : String,
+        val hvorfor: String?
+    )
 }
