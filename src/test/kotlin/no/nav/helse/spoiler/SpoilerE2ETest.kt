@@ -250,24 +250,28 @@ class SpoilerE2ETest {
         forårsaketAv: String = "påminnelse"
     ) = """
         {
-          "@event_name": "vedtaksperiode_venter",
-          "organisasjonsnummer": "123",
-          "vedtaksperiodeId": "$vedtaksperiodeId",
-          "ventetSiden": "2023-03-04T21:34:17.96322",
-          "venterTil": "+999999999-12-31T23:59:59.999999999",
-          "venterPå": {
-            "vedtaksperiodeId": "$venterPåVedtaksperiodeId",
-            "organisasjonsnummer": "987654321",
-            "venteårsak": {
-              "hva": "$venterPå",
-              "hvorfor": "TESTOLINI"
-            }
-          },
+          "@event_name": "vedtaksperioder_venter",
           "@id": "${UUID.randomUUID()}",
           "fødselsnummer": "12345678910",
           "@forårsaket_av": {
             "event_name": "$forårsaketAv"
-          }
+          },
+          "vedtaksperioder": [
+            {
+              "organisasjonsnummer": "123",
+              "vedtaksperiodeId": "$vedtaksperiodeId",
+              "ventetSiden": "2023-03-04T21:34:17.96322",
+              "venterTil": "+999999999-12-31T23:59:59.999999999",
+              "venterPå": {
+                "vedtaksperiodeId": "$venterPåVedtaksperiodeId",
+                "organisasjonsnummer": "987654321",
+                "venteårsak": {
+                  "hva": "$venterPå",
+                  "hvorfor": "TESTOLINI"
+                }
+              }
+            }
+          ]
         }
     """
 
