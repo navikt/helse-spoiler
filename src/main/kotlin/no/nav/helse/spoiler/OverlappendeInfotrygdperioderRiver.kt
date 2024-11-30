@@ -94,6 +94,7 @@ class OverlappendeInfotrygdperioderRiver(
 
     private fun erPeriodeTidligereAvsluttet(vedtaksperiodetilstand: String) : Boolean {
         return when(vedtaksperiodetilstand) {
+            "AVVENTER_GODKJENNING",
             "AVSLUTTET_UTEN_UTBETALING",
             "AVSLUTTET",
             "AVVENTER_REVURDERING",
