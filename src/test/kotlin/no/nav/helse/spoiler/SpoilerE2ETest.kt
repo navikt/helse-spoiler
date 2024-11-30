@@ -54,7 +54,9 @@ class SpoilerE2ETest {
         val vedtaksperiodeId = UUID.randomUUID()
         testRapid.sendTestMessage(overlappendeInfotrygdperioder(hendelseId, vedtaksperiodeId, tilstand = "AVSLUTTET_UTEN_UTBETALING"))
         testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, venterPå = "INNTEKTSMELDING"))
-        assertEquals(0, testRapid.inspektør.size)
+        val utgående = testRapid.inspektør.message(testRapid.inspektør.size-1)
+        assertEquals("slackmelding", utgående["@event_name"].asText())
+        assertEquals(1, testRapid.inspektør.size)
     }
 
     @Test
@@ -63,7 +65,9 @@ class SpoilerE2ETest {
         val vedtaksperiodeId = UUID.randomUUID()
         testRapid.sendTestMessage(overlappendeInfotrygdperioder(hendelseId, vedtaksperiodeId, tilstand = "AVSLUTTET_UTEN_UTBETALING"))
         testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, venterPå = "GODKJENNING"))
-        assertEquals(0, testRapid.inspektør.size)
+        val utgående = testRapid.inspektør.message(testRapid.inspektør.size-1)
+        assertEquals("slackmelding", utgående["@event_name"].asText())
+        assertEquals(1, testRapid.inspektør.size)
     }
 
     @Test
