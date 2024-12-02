@@ -74,7 +74,7 @@ class SpoilerE2ETest {
     fun `anmoder ikke om å forkaste vedtaksperiode hvis vedtaksperiode_venter er forårsaket av en anmoding`() {
         val hendelseId = UUID.randomUUID()
         val vedtaksperiodeId = UUID.randomUUID()
-        testRapid.sendTestMessage(overlappendeInfotrygdperioder(hendelseId, vedtaksperiodeId))
+        testRapid.sendTestMessage(overlappendeInfotrygdperioder(hendelseId, vedtaksperiodeId, true))
         testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, venterPå = "INNTEKTSMELDING", forårsaketAv = "anmodning_om_forkasting"))
         assertTrue(testRapid.inspektør.size == 0)
     }
@@ -89,7 +89,7 @@ class SpoilerE2ETest {
     @Test
     fun `anmoder ikke om å forkaste vedtaksperiode hvis det er ferie som er registrert i Infotrygd`() {
         val vedtaksperiodeId = UUID.randomUUID()
-        testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId, type  = "FRIPERIODE"))
+        testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId, kanForkastes = true, type  = "FRIPERIODE"))
         testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, venterPå = "INNTEKTSMELDING"))
         assertTrue(testRapid.inspektør.size == 0)
     }
@@ -117,7 +117,7 @@ class SpoilerE2ETest {
     @Test
     fun `anmoder ikke om vi venter på noe som ikke er IM eller Hjelp`() {
         val vedtaksperiodeId = UUID.randomUUID()
-        testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId, "PERSONUTBETALING"))
+        testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId, true, "PERSONUTBETALING"))
         testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, venterPåVedtaksperiodeId = vedtaksperiodeId, venterPå = "NOE_SPRØTT"))
         assertEquals(0, testRapid.inspektør.size)
     }
@@ -125,7 +125,7 @@ class SpoilerE2ETest {
     @Test
     fun `anmoder ikke om vi venter på en annen periode som venter på IM`() {
         val vedtaksperiodeId = UUID.randomUUID()
-        testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId, "PERSONUTBETALING"))
+        testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId, true, "PERSONUTBETALING"))
         testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, venterPåVedtaksperiodeId = UUID.randomUUID(), venterPå = "INNTEKTSMELDING"))
         assertEquals(0, testRapid.inspektør.size)
     }
@@ -133,7 +133,7 @@ class SpoilerE2ETest {
     @Test
     fun `anmoder ikke om vi venter på en annen periode som venter på Hjelp`() {
         val vedtaksperiodeId = UUID.randomUUID()
-        testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId, "PERSONUTBETALING"))
+        testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId, true, "PERSONUTBETALING"))
         testRapid.sendTestMessage(vedtaksperiodeVenter(vedtaksperiodeId, venterPåVedtaksperiodeId = UUID.randomUUID(), venterPå = "HJELP"))
         assertEquals(0, testRapid.inspektør.size)
     }
@@ -158,11 +158,11 @@ class SpoilerE2ETest {
         }
     }
 
-
     @Language("JSON")
     fun overlappendeInfotrygdperioder(
         hendelseId: UUID,
         vedtaksperiodeId: UUID = UUID.randomUUID(),
+        kanForkastes: Boolean = false,
         tilstand: String = "AVVENTER_BLOKKERENDE_PERIODE"
     ) =
         """
@@ -177,6 +177,7 @@ class SpoilerE2ETest {
                   "vedtaksperiodeFom": "2023-02-01",
                   "vedtaksperiodeTom": "2023-02-12",
                   "vedtaksperiodetilstand": "$tilstand",
+                  "kanForkastes": $kanForkastes,
                   "infotrygdperioder": [
                     {
                       "fom": "2023-01-02",
@@ -219,6 +220,7 @@ class SpoilerE2ETest {
         hendelseId: UUID,
         vedtaksperiodeId: UUID = UUID.randomUUID(),
         type: String,
+        kanForkastes: Boolean = false,
         tilstand: String = "AVVENTER_BLOKKERENDE_PERIODE"
     ) =
         """
@@ -232,6 +234,7 @@ class SpoilerE2ETest {
                     "vedtaksperiodeId": "$vedtaksperiodeId",
                     "vedtaksperiodeFom": "2023-02-01",
                     "vedtaksperiodeTom": "2023-02-12",
+                    "kanForkastes": $kanForkastes,
                     "vedtaksperiodetilstand": "$tilstand",
                     "infotrygdperioder": [
                         {

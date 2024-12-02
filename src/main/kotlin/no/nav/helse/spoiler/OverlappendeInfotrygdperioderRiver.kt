@@ -35,7 +35,7 @@ class OverlappendeInfotrygdperioderRiver(
                     require("vedtaksperiodeId") { id -> UUID.fromString(id.asText()) }
                     require("vedtaksperiodeFom", JsonNode::asLocalDate)
                     require("vedtaksperiodeTom", JsonNode::asLocalDate)
-                    requireKey("vedtaksperiodetilstand", "organisasjonsnummer")
+                    requireKey("vedtaksperiodetilstand", "kanForkastes", "organisasjonsnummer")
                     requireArray("infotrygdperioder") {
                         require("fom", JsonNode::asLocalDate)
                         require("fom", JsonNode::asLocalDate)
@@ -67,7 +67,9 @@ class OverlappendeInfotrygdperioderRiver(
         val overlappendeSomSkalISlackMelding = mutableListOf<OverlappendeInfotrygdperiodeEtterInfotrygdendringDto>()
 
         nyeOverlappende.forEach { nyPeriode ->
-            if (!erPeriodeTidligereAvsluttet(nyPeriode.vedtaksperiodeTilstand)) return@forEach log.info("Lager ikke alarm etter overlappende Infotrygdperiode i tilstand ${nyPeriode.vedtaksperiodeTilstand}")
+            val skalVarsles = !nyPeriode.kanForkastes || erPeriodeTidligereAvsluttet(nyPeriode.vedtaksperiodeTilstand)
+            if (!skalVarsles) return@forEach log.info("Lager ikke alarm etter overlappende Infotrygdperiode i tilstand ${nyPeriode.vedtaksperiodeTilstand}")
+            log.info("Lager alarm etter overlappende Infotrygdperiode i tilstand ${nyPeriode.vedtaksperiodeTilstand} fordi ${if (nyPeriode.kanForkastes) "perioden står i en avsluttet tilstand" else "perioden ikke kan forkastes automatisk"}")
             val førsteVedtaksperiode = overlappendeSomSkalISlackMelding.isEmpty()
             slackmelding += slackmelding(nyPeriode.vedtaksperiodeId, nyPeriode.vedtaksperiodeTilstand, nyPeriode.vedtaksperiodeFom to nyPeriode.vedtaksperiodeTom, førsteVedtaksperiode)
             overlappendeSomSkalISlackMelding.add(nyPeriode)

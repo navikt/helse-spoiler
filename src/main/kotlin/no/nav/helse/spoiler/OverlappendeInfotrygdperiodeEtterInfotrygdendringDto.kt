@@ -18,6 +18,7 @@ data class OverlappendeInfotrygdperiodeEtterInfotrygdendringDto(
     val vedtaksperiodeFom: LocalDate,
     val vedtaksperiodeTom: LocalDate,
     val vedtaksperiodeTilstand: String,
+    val kanForkastes: Boolean,
     val organisasjonsnummer: String,
     val infotrygdhistorikkHendelseId: UUID?,
     val infotrygdperioder: List<Infotrygdperiode>
@@ -46,6 +47,7 @@ fun JsonMessage.toOverlappendeInfotrygdperioderDto(): List<OverlappendeInfotrygd
             vedtaksperiodeFom = vedtaksperiode.path("vedtaksperiodeFom").asLocalDate(),
             vedtaksperiodeTom = vedtaksperiode.path("vedtaksperiodeTom").asLocalDate(),
             vedtaksperiodeTilstand = vedtaksperiode.path("vedtaksperiodetilstand").asText(),
+            kanForkastes = vedtaksperiode.path("kanForkastes").asBoolean(),
             fødelsnummer = fødelsnummer,
             organisasjonsnummer = vedtaksperiode.path("organisasjonsnummer").asText(),
             infotrygdhistorikkHendelseId = infotrygdHendelseId,
