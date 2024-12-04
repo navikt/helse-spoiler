@@ -61,6 +61,16 @@ class OverlappendeInfotrygdperioderRiver(
 
         log.info("Lagret ${nyeOverlappende.size} nye perioder fra overlappende_infotrygdperioder i databasen")
 
+        overlappendeInfotrygdperiodeEtterInfotrygdendring
+            .filter { it.vedtaksperiodeTilstand == "AVSLUTTET_UTEN_UTBETALING" && it.kanForkastes }
+            .forEach { periode ->
+                context.publish(JsonMessage.newMessage("anmodning_om_forkasting", mapOf(
+                    "fødselsnummer" to fødselsnummer,
+                    "organisasjonsnummer" to periode.organisasjonsnummer,
+                    "vedtaksperiodeId" to periode.vedtaksperiodeId
+                )).toJson())
+            }
+
         // lager slackmelding om overlapp
         val overskrift = "HUFF! Det er lagt inn overlappende periode(r) i Infotrygd :sadge: Hva skal vi gjøre med dette? \n\n"
         var slackmelding = overskrift
@@ -96,7 +106,6 @@ class OverlappendeInfotrygdperioderRiver(
 
     private fun erPeriodeTidligereAvsluttet(vedtaksperiodetilstand: String) : Boolean {
         return when(vedtaksperiodetilstand) {
-            "AVSLUTTET_UTEN_UTBETALING",
             "AVSLUTTET",
             "AVVENTER_REVURDERING",
             "AVVENTER_HISTORIKK_REVURDERING",
