@@ -32,7 +32,7 @@ spec:
         - application: spurtedu
   gcp:
     sqlInstances:
-      - type: POSTGRES_16
+      - type: POSTGRES_17
         diskAutoresize: true
         tier: db-f1-micro
         databases:
