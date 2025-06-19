@@ -31,6 +31,8 @@ spec:
   accessPolicy:
     outbound:
       rules:
+        - application: logging
+          namespace: nais-system
         - application: spurtedu
   gcp:
     sqlInstances:
