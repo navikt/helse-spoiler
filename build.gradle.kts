@@ -4,7 +4,7 @@ val flywayVersion = "11.5.0"
 val hikariCPVersion = "6.3.0"
 val kotliQueryVersion = "1.9.0"
 val rapidsAndRiversVersion = "2025080710011754553680.051be9b54ef9"
-val tbdLibsVersion = "2025.08.07-09.55-15719a86"
+val tbdLibsVersion = "2025.08.16-09.21-71db7cad"
 val postgresqlVersion = "42.7.5"
 
 plugins {
