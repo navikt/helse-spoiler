@@ -254,8 +254,10 @@ class SpoilerE2ETest {
         vedtaksperiodeId: UUID,
         venterPåVedtaksperiodeId: UUID = UUID.randomUUID(),
         venterPå: String,
-        forårsaketAv: String = "påminnelse"
-    ) = """
+        forårsaketAv: String = "påminnelse",
+        yrkesaktivitetstype: String = "ARBEIDSTAKER"
+
+        ) = """
         {
           "@event_name": "vedtaksperioder_venter",
           "@id": "${UUID.randomUUID()}",
@@ -267,6 +269,7 @@ class SpoilerE2ETest {
             {
               "organisasjonsnummer": "123",
               "vedtaksperiodeId": "$vedtaksperiodeId",
+              "yrkesaktivitetstype": "$yrkesaktivitetstype",
               "ventetSiden": "2023-03-04T21:34:17.96322",
               "venterTil": "+999999999-12-31T23:59:59.999999999",
               "venterPå": {
