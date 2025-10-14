@@ -66,6 +66,7 @@ class OverlappendeInfotrygdperioderRiver(
             .forEach { periode ->
                 context.publish(JsonMessage.newMessage("anmodning_om_forkasting", mapOf(
                     "fødselsnummer" to fødselsnummer,
+                    "yrkesaktivitetstype" to "ARBEIDSTAKER",
                     "organisasjonsnummer" to periode.organisasjonsnummer,
                     "vedtaksperiodeId" to periode.vedtaksperiodeId
                 )).toJson())

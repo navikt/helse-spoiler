@@ -64,6 +64,7 @@ internal class VedtaksperiodeVenterRiver (
         context.publish(JsonMessage.newMessage("anmodning_om_forkasting", mapOf(
             "fødselsnummer" to fnr,
             "organisasjonsnummer" to vedtaksperiodeVenter.organisasjonsnummer,
+            "yrkesaktivitetstype" to vedtaksperiodeVenter.yrkesaktivitetstype,
             "vedtaksperiodeId" to vedtaksperiodeVenter.vedtaksperiodeId,
             "vedtaksperiodeVenter" to mapOf(
                 "ventetPåHvem" to vedtaksperiodeVenter.venterPå.vedtaksperiodeId,
@@ -84,6 +85,7 @@ internal class VedtaksperiodeVenterRiver (
 @JsonIgnoreProperties(ignoreUnknown = true)
 private data class VedtaksperiodeVenterDto(
     val organisasjonsnummer: String,
+    val yrkesaktivitetstype: String,
     val vedtaksperiodeId: UUID,
     val ventetSiden: LocalDateTime,
     val venterPå: VenterPå
