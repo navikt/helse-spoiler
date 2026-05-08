@@ -8,7 +8,9 @@ on:
       - 'CODEOWNERS'
     branches:
       - main
-
+  schedule:
+    - cron: '0 4 * * 3'
+      timezone: 'Europe/Oslo'
 jobs:
   set_version:
     name: set image name
