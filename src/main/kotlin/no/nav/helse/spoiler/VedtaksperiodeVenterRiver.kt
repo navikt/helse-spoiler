@@ -72,7 +72,9 @@ internal class VedtaksperiodeVenterRiver (
                 "ventetPåHvorfor" to vedtaksperiodeVenter.venterPå.venteårsak.hvorfor,
                 "ventetSiden" to vedtaksperiodeVenter.ventetSiden
             ),
-            "infotrygdOverlappHendelseId" to overlappendeInfortrygdperioder
+            "infotrygdOverlappHendelseId" to overlappendeInfortrygdperioder,
+            "årsaker" to listOf("Forkastet automatisk på grunn av overlappende Infotrygd utbetaling"),
+            "@avsender" to mapOf("navn" to "spoiler", "NavIdent" to "spoiler")
         )).toJson())
     }
 

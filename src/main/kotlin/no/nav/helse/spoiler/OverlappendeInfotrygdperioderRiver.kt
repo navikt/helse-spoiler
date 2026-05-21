@@ -68,7 +68,9 @@ class OverlappendeInfotrygdperioderRiver(
                     "fødselsnummer" to fødselsnummer,
                     "yrkesaktivitetstype" to "ARBEIDSTAKER",
                     "organisasjonsnummer" to periode.organisasjonsnummer,
-                    "vedtaksperiodeId" to periode.vedtaksperiodeId
+                    "vedtaksperiodeId" to periode.vedtaksperiodeId,
+                    "årsaker" to listOf("Forkastet automatisk på grunn av overlappende Infotrygd utbetaling"),
+                    "@avsender" to mapOf("navn" to "spoiler", "NavIdent" to "spoiler")
                 )).toJson())
             }
 
