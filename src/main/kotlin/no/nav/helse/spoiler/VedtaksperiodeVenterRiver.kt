@@ -74,7 +74,7 @@ internal class VedtaksperiodeVenterRiver (
             ),
             "infotrygdOverlappHendelseId" to overlappendeInfortrygdperioder,
             "årsaker" to listOf("Forkastet automatisk på grunn av overlappende Infotrygd utbetaling"),
-            "@avsender" to mapOf("navn" to "spoiler", "NavIdent" to "spoiler")
+            "@avsender" to mapOf("navn" to "spoiler", "NAVIdent" to "spoiler")
         )).toJson())
     }
 
