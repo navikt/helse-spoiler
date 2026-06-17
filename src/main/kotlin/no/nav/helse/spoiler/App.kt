@@ -40,7 +40,6 @@ fun launchApp(env: Map<String, String>) {
 
     RapidApplication.create(env).apply {
         OverlappendeInfotrygdperioderRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao, spurteDuClient)
-        VedtaksperiodeVenterRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
         VedtaksperiodeForkastetRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
         OppsummeringTilSlackRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
     }.apply {

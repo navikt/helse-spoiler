@@ -61,19 +61,6 @@ class OverlappendeInfotrygdperioderRiver(
 
         log.info("Lagret ${nyeOverlappende.size} nye perioder fra overlappende_infotrygdperioder i databasen")
 
-        overlappendeInfotrygdperiodeEtterInfotrygdendring
-            .filter { it.vedtaksperiodeTilstand == "AVSLUTTET_UTEN_UTBETALING" && it.kanForkastes }
-            .forEach { periode ->
-                context.publish(JsonMessage.newMessage("anmodning_om_forkasting", mapOf(
-                    "fødselsnummer" to fødselsnummer,
-                    "yrkesaktivitetstype" to "ARBEIDSTAKER",
-                    "organisasjonsnummer" to periode.organisasjonsnummer,
-                    "vedtaksperiodeId" to periode.vedtaksperiodeId,
-                    "årsaker" to listOf("Forkastet automatisk på grunn av overlappende Infotrygd utbetaling"),
-                    "@avsender" to mapOf("navn" to "spoiler", "NAVIdent" to "spoiler")
-                )).toJson())
-            }
-
         // lager slackmelding om overlapp
         val overskrift = "HUFF! Det er lagt inn overlappende periode(r) i Infotrygd :sadge: Hva skal vi gjøre med dette? \n\n"
         var slackmelding = overskrift
