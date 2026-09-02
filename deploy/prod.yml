@@ -42,6 +42,15 @@ spec:
         databases:
           - name: spoiler
             envVarPrefix: DATABASE
+        flags:
+          - name: cloudsql.enable_pgaudit
+            value: "on"
+          - name: pgaudit.log
+            value: "write,ddl,role"
+          - name: pgaudit.log_parameter
+            value: "on"
+          - name: pgaudit.log_relation
+            value: "on"
   kafka:
     pool: nav-prod
   env:
