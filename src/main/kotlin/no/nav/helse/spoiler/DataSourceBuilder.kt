@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory
 import java.time.Duration
 import javax.sql.DataSource
 
-// Understands how to create a data source from environment variables
 internal class DataSourceBuilder(env: Map<String, String>) {
     private val hikariConfig = HikariConfig().apply {
         jdbcUrl = env["DATABASE_JDBC_URL"] ?: String.format(
