@@ -21,15 +21,14 @@ data class OverlappendeInfotrygdperiodeEtterInfotrygdendringDto(
     val kanForkastes: Boolean,
     val organisasjonsnummer: String,
     val infotrygdhistorikkHendelseId: UUID?,
-    val infotrygdperioder: List<Infotrygdperiode>
+    val infotrygdperioder: List<Infotrygdperiode>,
 ) {
-
     data class Infotrygdperiode(
         val vedtaksperiodeId: UUID,
         val fom: LocalDate,
         val tom: LocalDate,
         val type: String,
-        val orgnummer: String?
+        val orgnummer: String?,
     )
 }
 
@@ -51,17 +50,18 @@ fun JsonMessage.toOverlappendeInfotrygdperioderDto(): List<OverlappendeInfotrygd
             fødelsnummer = fødelsnummer,
             organisasjonsnummer = vedtaksperiode.path("organisasjonsnummer").asText(),
             infotrygdhistorikkHendelseId = infotrygdHendelseId,
-            infotrygdperioder = vedtaksperiode.path("infotrygdperioder").toInfotrygdperioder(vedtaksperiodeId)
+            infotrygdperioder = vedtaksperiode.path("infotrygdperioder").toInfotrygdperioder(vedtaksperiodeId),
         )
     }
 }
 
-fun JsonNode.toInfotrygdperioder(vedtaksperiodeId: UUID) = map { periode ->
-    Infotrygdperiode(
-        vedtaksperiodeId = vedtaksperiodeId,
-        fom = periode["fom"].asLocalDate(),
-        tom = periode["tom"].asLocalDate(),
-        type = periode["type"].asText(),
-        orgnummer = periode["orgnummer"]?.asText()
-    )
-}
+fun JsonNode.toInfotrygdperioder(vedtaksperiodeId: UUID) =
+    map { periode ->
+        Infotrygdperiode(
+            vedtaksperiodeId = vedtaksperiodeId,
+            fom = periode["fom"].asLocalDate(),
+            tom = periode["tom"].asLocalDate(),
+            type = periode["type"].asText(),
+            orgnummer = periode["orgnummer"]?.asText(),
+        )
+    }

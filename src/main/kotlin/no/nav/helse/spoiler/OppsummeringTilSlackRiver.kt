@@ -9,35 +9,43 @@ import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
 import java.time.Year
 
-internal class OppsummeringTilSlackRiver (
+internal class OppsummeringTilSlackRiver(
     rapidApplication: RapidsConnection,
-    private val overlappendeInfotrygdperiodeEtterInfotrygdendringDao: OverlappendeInfotrygdperiodeEtterInfotrygdendringDao
-
+    private val overlappendeInfotrygdperiodeEtterInfotrygdendringDao: OverlappendeInfotrygdperiodeEtterInfotrygdendringDao,
 ) : River.PacketListener {
-
     init {
-        River(rapidApplication).apply {
-            precondition { it.requireValue("@event_name", "identifiser_overlappende_perioder") }
-        }.register(this)
+        River(rapidApplication)
+            .apply {
+                precondition { it.requireValue("@event_name", "identifiser_overlappende_perioder") }
+            }.register(this)
 
-        River(rapidApplication).apply {
-            precondition {
-                it.requireValue("@event_name", "hel_time")
-                it.requireValue("time", 9)
-                it.requireValue("dagIUke", 1)
-            }
-        }.register(this)
+        River(rapidApplication)
+            .apply {
+                precondition {
+                    it.requireValue("@event_name", "hel_time")
+                    it.requireValue("time", 9)
+                    it.requireValue("dagIUke", 1)
+                }
+            }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         val oppsummering = overlappendeInfotrygdperiodeEtterInfotrygdendringDao.lagOppsummering()
         if (oppsummering.isEmpty()) return lagHyggeligMelding(context)
         val totaltAntall = oppsummering.sumOf { it.antall }
-        val perÅr = oppsummering.groupBy { it.år }
-            .entries
-            .sortedByDescending { it.key }
-            .map { (år, verdier) -> år to verdier.sortedByDescending { it.antall }}
-        val melding = "Det er totalt $totaltAntall vedtaksperioder med overlapp mot Infotrygd. :sadkek:\n\n" +
+        val perÅr =
+            oppsummering
+                .groupBy { it.år }
+                .entries
+                .sortedByDescending { it.key }
+                .map { (år, verdier) -> år to verdier.sortedByDescending { it.antall } }
+        val melding =
+            "Det er totalt $totaltAntall vedtaksperioder med overlapp mot Infotrygd. :sadkek:\n\n" +
                 perÅr.joinToString(separator = "\n\n") { (år, verdier) ->
                     "$år ${emojiForÅr(år)}\n${verdier.joinToString(separator = "\n") { verdi ->
                         "\t${"${verdi.antall} stk".padEnd(10, ' ')} ${verdi.tilstand} ${emojiForTilstand(verdi.tilstand)} pga. ${verdi.overlapptype} ${emojiForType(verdi.overlapptype)}"
@@ -63,21 +71,23 @@ internal class OppsummeringTilSlackRiver (
         return ""
     }
 
-    private fun emojiForType(type: OppsummeringDto.Overlapptype): String {
-        return when (type) {
+    private fun emojiForType(type: OppsummeringDto.Overlapptype): String =
+        when (type) {
             OppsummeringDto.Overlapptype.FERIE -> ":beach_with_umbrella:"
             OppsummeringDto.Overlapptype.UTBETALING -> ":pepe_cash:"
         }
-    }
 
     private fun lagHyggeligMelding(context: MessageContext) {
         context.publish(lagSlackmelding("Det er ingen registrerte vedtaksperioder med overlapp mot Infotrygd :yay-frog:").toJson())
     }
 
-
-    private fun lagSlackmelding(melding: String) = JsonMessage.newMessage("slackmelding", mapOf(
-        "melding" to melding
-    ))
+    private fun lagSlackmelding(melding: String) =
+        JsonMessage.newMessage(
+            "slackmelding",
+            mapOf(
+                "melding" to melding,
+            ),
+        )
 
     private companion object {
         val logger = LoggerFactory.getLogger(OppsummeringTilSlackRiver::class.java)

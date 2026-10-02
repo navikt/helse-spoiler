@@ -6,10 +6,7 @@ metadata:
   labels:
     team: tbd
 spec:
-  image: {{image}}
   port: 8080
-  strategy:
-    type: Recreate
   liveness:
     path: isalive
     initialDelay: 10
@@ -20,13 +17,9 @@ spec:
     min: 1
     max: 1
   prometheus:
-    enabled: true
     path: /metrics
   resources:
-    limits:
-      memory: 4Gi
     requests:
-      cpu: 200m
       memory: 256Mi
   accessPolicy:
     outbound:
@@ -34,25 +27,6 @@ spec:
         - application: logging
           namespace: nais-system
         - application: spurtedu
-  gcp:
-    sqlInstances:
-      - type: POSTGRES_17
-        diskAutoresize: true
-        tier: db-custom-1-3840
-        databases:
-          - name: spoiler
-            envVarPrefix: DATABASE
-        flags:
-          - name: cloudsql.enable_pgaudit
-            value: "on"
-          - name: pgaudit.log
-            value: "write,ddl,role"
-          - name: pgaudit.log_parameter
-            value: "on"
-          - name: pgaudit.log_relation
-            value: "on"
-  kafka:
-    pool: nav-prod
   env:
     - name: KAFKA_CONSUMER_GROUP_ID
       value: tbd-spoiler-v1

@@ -9,20 +9,24 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
 
-internal class VedtaksperiodeForkastetRiver (
+internal class VedtaksperiodeForkastetRiver(
     rapidApplication: RapidsConnection,
-    private val overlappendeInfotrygdperiodeEtterInfotrygdendringDao: OverlappendeInfotrygdperiodeEtterInfotrygdendringDao
-
+    private val overlappendeInfotrygdperiodeEtterInfotrygdendringDao: OverlappendeInfotrygdperiodeEtterInfotrygdendringDao,
 ) : River.PacketListener {
-
     init {
-        River(rapidApplication).apply {
-            precondition { it.requireValue("@event_name", "vedtaksperiode_forkastet") }
-            validate { it.requireKey("vedtaksperiodeId") }
-        }.register(this)
+        River(rapidApplication)
+            .apply {
+                precondition { it.requireValue("@event_name", "vedtaksperiode_forkastet") }
+                validate { it.requireKey("vedtaksperiodeId") }
+            }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         val vedtaksperiodeId = packet["vedtaksperiodeId"].asText().toUUID()
         logger.info("sletter $vedtaksperiodeId")
         overlappendeInfotrygdperiodeEtterInfotrygdendringDao.slett(vedtaksperiodeId)

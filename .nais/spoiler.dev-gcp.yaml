@@ -1,0 +1,18 @@
+spec:
+  prometheus:
+    enabled: false
+  resources:
+    limits:
+      memory: 1024Mi
+    requests:
+      cpu: 50m
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_17
+        diskAutoresize: true
+        tier: db-f1-micro
+        databases:
+          - name: spoiler
+            envVarPrefix: DATABASE
+  kafka:
+    pool: nav-dev

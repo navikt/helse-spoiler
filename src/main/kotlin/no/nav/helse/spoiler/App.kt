@@ -25,28 +25,37 @@ fun launchApp(env: Map<String, String>) {
     val dataSource = dataSourceBuilder.getDataSource()
     val overlappendeInfotrygdperiodeEtterInfotrygdendringDao = OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(dataSource)
 
-    val spurteDuClient = SpurteDuClient(
-        objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule()),
-        tokenProvider = object : AzureTokenProvider {
-            override fun bearerToken(scope: String): com.github.navikt.tbd_libs.result_object.Result<AzureToken> {
-                TODO("Not yet implemented")
-            }
+    val spurteDuClient =
+        SpurteDuClient(
+            objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule()),
+            tokenProvider =
+                object : AzureTokenProvider {
+                    override fun bearerToken(scope: String): com.github.navikt.tbd_libs.result_object.Result<AzureToken> {
+                        TODO("Not yet implemented")
+                    }
 
-            override fun onBehalfOfToken(scope: String, token: String): com.github.navikt.tbd_libs.result_object.Result<AzureToken> {
-                TODO("Not yet implemented")
-            }
-        }
-    )
+                    override fun onBehalfOfToken(
+                        scope: String,
+                        token: String,
+                    ): com.github.navikt.tbd_libs.result_object.Result<AzureToken> {
+                        TODO("Not yet implemented")
+                    }
+                },
+        )
 
-    RapidApplication.create(env).apply {
-        OverlappendeInfotrygdperioderRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao, spurteDuClient)
-        VedtaksperiodeForkastetRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
-        OppsummeringTilSlackRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
-    }.apply {
-        register(object : RapidsConnection.StatusListener {
-            override fun onStartup(rapidsConnection: RapidsConnection) {
-                dataSourceBuilder.migrate()
-            }
-        })
-    }.start()
+    RapidApplication
+        .create(env)
+        .apply {
+            OverlappendeInfotrygdperioderRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao, spurteDuClient)
+            VedtaksperiodeForkastetRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
+            OppsummeringTilSlackRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
+        }.apply {
+            register(
+                object : RapidsConnection.StatusListener {
+                    override fun onStartup(rapidsConnection: RapidsConnection) {
+                        dataSourceBuilder.migrate()
+                    }
+                },
+            )
+        }.start()
 }
