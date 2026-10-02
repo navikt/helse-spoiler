@@ -1,9 +1,5 @@
 package no.nav.helse.spoiler
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
@@ -15,6 +11,9 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import com.github.navikt.tbd_libs.spurtedu.SkjulRequest
 import com.github.navikt.tbd_libs.spurtedu.SpurteDuClient
 import io.micrometer.core.instrument.MeterRegistry
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.time.LocalDate
 import java.util.*
 
@@ -29,11 +28,11 @@ class OverlappendeInfotrygdperioderRiver(
                 precondition { it.requireValue("@event_name", "overlappende_infotrygdperioder") }
                 validate {
                     it.require("@opprettet", JsonNode::asLocalDateTime)
-                    it.require("@id") { id -> UUID.fromString(id.asText()) }
+                    it.require("@id") { id -> UUID.fromString(id.asString()) }
                     it.requireKey("fødselsnummer")
-                    it.require("infotrygdhistorikkHendelseId") { id -> UUID.fromString(id.asText()) }
+                    it.require("infotrygdhistorikkHendelseId") { id -> UUID.fromString(id.asString()) }
                     it.requireArray("vedtaksperioder") {
-                        require("vedtaksperiodeId") { id -> UUID.fromString(id.asText()) }
+                        require("vedtaksperiodeId") { id -> UUID.fromString(id.asString()) }
                         require("vedtaksperiodeFom", JsonNode::asLocalDate)
                         require("vedtaksperiodeTom", JsonNode::asLocalDate)
                         requireKey("vedtaksperiodetilstand", "kanForkastes", "organisasjonsnummer")
@@ -66,7 +65,7 @@ class OverlappendeInfotrygdperioderRiver(
         log.info("Mottok overlappende_infotrygdperiode_etter_infotrygdendring-melding")
 
         val overlappendeInfotrygdperiodeEtterInfotrygdendring = packet.toOverlappendeInfotrygdperioderDto()
-        val fødselsnummer = packet["fødselsnummer"].asText()
+        val fødselsnummer = packet["fødselsnummer"].asString()
         val nyeOverlappende = overlappendeInfotrygdperiodeEtterInfotrygdendringDao.lagre(fødselsnummer, overlappendeInfotrygdperiodeEtterInfotrygdendring)
 
         log.info("Lagret ${nyeOverlappende.size} nye perioder fra overlappende_infotrygdperioder i databasen")
@@ -141,7 +140,7 @@ class OverlappendeInfotrygdperioderRiver(
         )
 }
 
-private val objectMapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+private val objectMapper: ObjectMapper = jacksonObjectMapper()
 private const val tbdgruppeProd = "c0227409-2085-4eb2-b487-c4ba270986a3"
 private const val tbdSpannerProd = "382f42f4-f46b-40c1-849b-38d6b5a1f639"
 

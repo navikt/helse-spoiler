@@ -1,11 +1,11 @@
 package no.nav.helse.spoiler
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
 import com.github.navikt.tbd_libs.rapids_and_rivers.toUUID
 import no.nav.helse.spoiler.OverlappendeInfotrygdperiodeEtterInfotrygdendringDto.Infotrygdperiode
+import tools.jackson.databind.JsonNode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -33,22 +33,22 @@ data class OverlappendeInfotrygdperiodeEtterInfotrygdendringDto(
 }
 
 fun JsonMessage.toOverlappendeInfotrygdperioderDto(): List<OverlappendeInfotrygdperiodeEtterInfotrygdendringDto> {
-    val id = this["@id"].asText().toUUID()
+    val id = this["@id"].asString().toUUID()
     val opprettet = this["@opprettet"].asLocalDateTime()
-    val fødelsnummer = this["fødselsnummer"].asText()
-    val infotrygdHendelseId = this["infotrygdhistorikkHendelseId"].asText().toUUID()
-    return this["vedtaksperioder"].map { vedtaksperiode ->
-        val vedtaksperiodeId = vedtaksperiode.path("vedtaksperiodeId").asText().toUUID()
+    val fødelsnummer = this["fødselsnummer"].asString()
+    val infotrygdHendelseId = this["infotrygdhistorikkHendelseId"].asString().toUUID()
+    return this["vedtaksperioder"].values().map { vedtaksperiode ->
+        val vedtaksperiodeId = vedtaksperiode.path("vedtaksperiodeId").asString().toUUID()
         OverlappendeInfotrygdperiodeEtterInfotrygdendringDto(
             hendelseId = id,
             opprettet = opprettet,
             vedtaksperiodeId = vedtaksperiodeId,
             vedtaksperiodeFom = vedtaksperiode.path("vedtaksperiodeFom").asLocalDate(),
             vedtaksperiodeTom = vedtaksperiode.path("vedtaksperiodeTom").asLocalDate(),
-            vedtaksperiodeTilstand = vedtaksperiode.path("vedtaksperiodetilstand").asText(),
+            vedtaksperiodeTilstand = vedtaksperiode.path("vedtaksperiodetilstand").asString(),
             kanForkastes = vedtaksperiode.path("kanForkastes").asBoolean(),
             fødelsnummer = fødelsnummer,
-            organisasjonsnummer = vedtaksperiode.path("organisasjonsnummer").asText(),
+            organisasjonsnummer = vedtaksperiode.path("organisasjonsnummer").asString(),
             infotrygdhistorikkHendelseId = infotrygdHendelseId,
             infotrygdperioder = vedtaksperiode.path("infotrygdperioder").toInfotrygdperioder(vedtaksperiodeId),
         )
@@ -56,12 +56,12 @@ fun JsonMessage.toOverlappendeInfotrygdperioderDto(): List<OverlappendeInfotrygd
 }
 
 fun JsonNode.toInfotrygdperioder(vedtaksperiodeId: UUID) =
-    map { periode ->
+    values().map { periode ->
         Infotrygdperiode(
             vedtaksperiodeId = vedtaksperiodeId,
             fom = periode["fom"].asLocalDate(),
             tom = periode["tom"].asLocalDate(),
-            type = periode["type"].asText(),
-            orgnummer = periode["orgnummer"]?.asText(),
+            type = periode["type"].asString(),
+            orgnummer = periode["orgnummer"]?.asString(),
         )
     }

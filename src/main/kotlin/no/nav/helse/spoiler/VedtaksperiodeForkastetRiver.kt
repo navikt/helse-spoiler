@@ -27,7 +27,7 @@ internal class VedtaksperiodeForkastetRiver(
         metadata: MessageMetadata,
         meterRegistry: MeterRegistry,
     ) {
-        val vedtaksperiodeId = packet["vedtaksperiodeId"].asText().toUUID()
+        val vedtaksperiodeId = packet["vedtaksperiodeId"].asString().toUUID()
         logger.info("sletter $vedtaksperiodeId")
         overlappendeInfotrygdperiodeEtterInfotrygdendringDao.slett(vedtaksperiodeId)
     }
