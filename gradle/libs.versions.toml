@@ -3,7 +3,7 @@ tbdLibs = "20261005.1432"
 sykepengerGradlePlugins = "20261001.1830"
 
 [libraries]
-flyway-postgresql = "org.flywaydb:flyway-database-postgresql:13.8.1"
+flyway-postgresql = "org.flywaydb:flyway-database-postgresql:13.9.0"
 hikariCP = "com.zaxxer:HikariCP:7.1.0"
 kotliquery = "com.github.seratch:kotliquery:1.9.1"
 postgresql = "org.postgresql:postgresql:42.7.13"
