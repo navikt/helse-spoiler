@@ -1,5 +1,7 @@
 package no.nav.helse.spoiler
 
+import com.github.navikt.tbd_libs.personpseudoid.Identitetsnummer
+import com.github.navikt.tbd_libs.personpseudoid.PersonPseudoIdProvider
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
@@ -8,19 +10,15 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
-import com.github.navikt.tbd_libs.spurtedu.SkjulRequest
-import com.github.navikt.tbd_libs.spurtedu.SpurteDuClient
 import io.micrometer.core.instrument.MeterRegistry
 import tools.jackson.databind.JsonNode
-import tools.jackson.databind.ObjectMapper
-import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.time.LocalDate
 import java.util.*
 
 class OverlappendeInfotrygdperioderRiver(
     rapidApplication: RapidsConnection,
     private val overlappendeInfotrygdperiodeEtterInfotrygdendringDao: OverlappendeInfotrygdperiodeEtterInfotrygdendringDao,
-    private val spurteDuClient: SpurteDuClient?,
+    private val personPseudoIdProvider: PersonPseudoIdProvider?,
 ) : River.PacketListener {
     init {
         River(rapidApplication)
@@ -87,9 +85,8 @@ class OverlappendeInfotrygdperioderRiver(
         if (overlappendeSomSkalISlackMelding.size > 3) {
             slackmelding = overskrift + "Og det gjelder mer enn tre vedtaksperioder i perioden ${overlappendeSomSkalISlackMelding.minOf { it.vedtaksperiodeFom }} - ${overlappendeSomSkalISlackMelding.maxOf { it.vedtaksperiodeTom }} \n\n"
         }
-        val spannerUrlTbd = fødselsnummer.spannerUrl(spurteDuClient, tbdgruppeProd)
-        val spannerUrlSaksbehandler = fødselsnummer.spannerUrl(spurteDuClient, tbdSpannerProd)
-        slackmelding += "Her finner du spannerlinken til vedkommende:${spannerUrlTbd?.let { "\n$it (for utviklere)" }}${spannerUrlSaksbehandler?.let { "\n$it (for saksbehandlere)" }}\n:hats-off:"
+        val spannerUrl = fødselsnummer.spannerUrl(personPseudoIdProvider)
+        slackmelding += "Her finner du spannerlinken til vedkommende:${spannerUrl?.let { "\n$it" }}\n:hats-off:"
         log.info("Publiserer overlappende Infotrygdperiode til Slack")
         context.publish(lagSlackmelding(slackmelding).toJson())
     }
@@ -97,14 +94,12 @@ class OverlappendeInfotrygdperioderRiver(
     companion object {
         private const val SLACKKANAL_OVERLAPPENDE_UTBETALINGER = "C072AFA7DAN"
 
-        private fun String.spannerUrl(
-            spurteDuClient: SpurteDuClient?,
-            tilgang: String = tbdgruppeProd,
-        ) = spurteDuClient?.let {
-            spannerlink(spurteDuClient, this, tilgang).let { url ->
-                "<$url|spannerlink>"
+        private fun String.spannerUrl(personPseudoIdProvider: PersonPseudoIdProvider?) =
+            personPseudoIdProvider?.let {
+                spannerlink(personPseudoIdProvider, this).let { url ->
+                    "<$url|spannerlink>"
+                }
             }
-        }
     }
 
     private fun erPeriodeTidligereAvsluttet(vedtaksperiodetilstand: String): Boolean =
@@ -140,27 +135,10 @@ class OverlappendeInfotrygdperioderRiver(
         )
 }
 
-private val objectMapper: ObjectMapper = jacksonObjectMapper()
-private const val tbdgruppeProd = "c0227409-2085-4eb2-b487-c4ba270986a3"
-private const val tbdSpannerProd = "382f42f4-f46b-40c1-849b-38d6b5a1f639"
-
 fun spannerlink(
-    spurteDuClient: SpurteDuClient,
+    personPseudoIdProvider: PersonPseudoIdProvider,
     fnr: String,
-    tilgang: String,
 ): String {
-    val payload =
-        SkjulRequest.SkjulTekstRequest(
-            tekst =
-                objectMapper.writeValueAsString(
-                    mapOf(
-                        "ident" to fnr,
-                        "identtype" to "FNR",
-                    ),
-                ),
-            påkrevdTilgang = tilgang,
-        )
-
-    val spurteDuLink = spurteDuClient.skjul(payload)
-    return "https://spanner.ansatt.nav.no/person/${spurteDuLink.id}"
+    val personPseudoId = personPseudoIdProvider.nyPersonPseudoId(Identitetsnummer(fnr))
+    return "https://spanner.ansatt.nav.no/person/$personPseudoId"
 }

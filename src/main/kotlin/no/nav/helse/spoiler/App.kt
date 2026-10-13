@@ -1,12 +1,9 @@
 package no.nav.helse.spoiler
 
-import com.github.navikt.tbd_libs.azure.AzureToken
-import com.github.navikt.tbd_libs.azure.AzureTokenProvider
+import com.github.navikt.tbd_libs.personpseudoid.ValkeyPersonPseudoIdProvider
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
-import com.github.navikt.tbd_libs.spurtedu.SpurteDuClient
 import no.nav.helse.rapids_rivers.RapidApplication
 import org.slf4j.LoggerFactory
-import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal val log = LoggerFactory.getLogger("no.nav.helse.spoiler")
 internal val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -24,28 +21,12 @@ fun launchApp(env: Map<String, String>) {
     val dataSource = dataSourceBuilder.getDataSource()
     val overlappendeInfotrygdperiodeEtterInfotrygdendringDao = OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(dataSource)
 
-    val spurteDuClient =
-        SpurteDuClient(
-            objectMapper = jacksonObjectMapper(),
-            tokenProvider =
-                object : AzureTokenProvider {
-                    override fun bearerToken(scope: String): com.github.navikt.tbd_libs.result_object.Result<AzureToken> {
-                        TODO("Not yet implemented")
-                    }
-
-                    override fun onBehalfOfToken(
-                        scope: String,
-                        token: String,
-                    ): com.github.navikt.tbd_libs.result_object.Result<AzureToken> {
-                        TODO("Not yet implemented")
-                    }
-                },
-        )
+    val personPseudoIdProvider = ValkeyPersonPseudoIdProvider.fraEnv(instansNavn = "personpseudoid", env = env)
 
     RapidApplication
         .create(env)
         .apply {
-            OverlappendeInfotrygdperioderRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao, spurteDuClient)
+            OverlappendeInfotrygdperioderRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao, personPseudoIdProvider)
             VedtaksperiodeForkastetRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
             OppsummeringTilSlackRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
         }.apply {

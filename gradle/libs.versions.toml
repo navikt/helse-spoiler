@@ -10,7 +10,7 @@ postgresql = "org.postgresql:postgresql:42.7.13"
 
 rapidsAndRivers = "com.github.navikt:rapids-and-rivers:2026091610031789545782"
 
-tbdLibs-spurteduClient = { module = "com.github.navikt.tbd-libs:spurtedu-client", version.ref = "tbdLibs" }
+tbdLibs-personPseudoId = { module = "com.github.navikt.tbd-libs:person-pseudo-id", version.ref = "tbdLibs" }
 tbdLibs-postgresTestdatabaser = { module = "com.github.navikt.tbd-libs:postgres-testdatabaser", version.ref = "tbdLibs" }
 tbdLibs-rapidsAndRiversTest = { module = "com.github.navikt.tbd-libs:rapids-and-rivers-test", version.ref = "tbdLibs" }
 

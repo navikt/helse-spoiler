@@ -8,7 +8,7 @@ sykepengerDeployable {
 
 dependencies {
     implementation(libs.rapidsAndRivers)
-    implementation(libs.tbdLibs.spurteduClient)
+    implementation(libs.tbdLibs.personPseudoId)
 
     implementation(libs.flyway.postgresql)
     implementation(libs.hikariCP)
