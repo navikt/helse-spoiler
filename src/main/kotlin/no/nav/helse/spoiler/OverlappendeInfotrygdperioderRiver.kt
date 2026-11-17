@@ -19,6 +19,7 @@ class OverlappendeInfotrygdperioderRiver(
     rapidApplication: RapidsConnection,
     private val overlappendeInfotrygdperiodeEtterInfotrygdendringDao: OverlappendeInfotrygdperiodeEtterInfotrygdendringDao,
     private val personPseudoIdProvider: PersonPseudoIdProvider?,
+    private val speilUrl: String,
 ) : River.PacketListener {
     init {
         River(rapidApplication)
@@ -85,6 +86,8 @@ class OverlappendeInfotrygdperioderRiver(
         if (overlappendeSomSkalISlackMelding.size > 3) {
             slackmelding = overskrift + "Og det gjelder mer enn tre vedtaksperioder i perioden ${overlappendeSomSkalISlackMelding.minOf { it.vedtaksperiodeFom }} - ${overlappendeSomSkalISlackMelding.maxOf { it.vedtaksperiodeTom }} \n\n"
         }
+        val vedtaksperiodeIdTilSpeil = overlappendeSomSkalISlackMelding.first().vedtaksperiodeId
+        slackmelding += "<$speilUrl/vedtaksperiode/$vedtaksperiodeIdTilSpeil|Åpne i Speil>\n"
         val spannerUrl = fødselsnummer.spannerUrl(personPseudoIdProvider)
         slackmelding += "Her finner du spannerlinken til vedkommende:${spannerUrl?.let { "\n$it" }}\n:hats-off:"
         log.info("Publiserer overlappende Infotrygdperiode til Slack")

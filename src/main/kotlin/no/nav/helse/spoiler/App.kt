@@ -23,10 +23,12 @@ fun launchApp(env: Map<String, String>) {
 
     val personPseudoIdProvider = ValkeyPersonPseudoIdProvider.fraEnv(instansNavn = "personpseudoid", env = env)
 
+    val speilUrl = env.getValue("SPEIL_URL")
+
     RapidApplication
         .create(env)
         .apply {
-            OverlappendeInfotrygdperioderRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao, personPseudoIdProvider)
+            OverlappendeInfotrygdperioderRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao, personPseudoIdProvider, speilUrl)
             VedtaksperiodeForkastetRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
             OppsummeringTilSlackRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao)
         }.apply {

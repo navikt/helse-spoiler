@@ -7,6 +7,7 @@ import no.nav.sykepenger.libs.postgres.TestDatabase
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -22,7 +23,7 @@ class SpoilerE2ETest {
         val overlappendeInfotrygdperiodeEtterInfotrygdendringDao = OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(dataSource)
         testRapid =
             TestRapid().apply {
-                OverlappendeInfotrygdperioderRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao, null)
+                OverlappendeInfotrygdperioderRiver(this, overlappendeInfotrygdperiodeEtterInfotrygdendringDao, null, "https://speil.intern.nav.no")
             }
     }
 
@@ -36,6 +37,16 @@ class SpoilerE2ETest {
         val hendelseId = UUID.randomUUID()
         testRapid.sendTestMessage(overlappendeInfotrygdperioder(hendelseId))
         assertEquals(3, tellOverlappendeInfotrygdperioderEtterInfotrygdEndring(hendelseId))
+    }
+
+    @Test
+    fun `slackmeldingen lenker direkte til vedtaksperioden i speil`() {
+        val vedtaksperiodeId = UUID.randomUUID()
+        testRapid.sendTestMessage(overlappendeInfotrygdperioder(UUID.randomUUID(), vedtaksperiodeId))
+
+        val slackmelding = testRapid.inspektør.message(testRapid.inspektør.size - 1)
+        assertEquals("slackmelding", slackmelding["@event_name"].asString())
+        assertTrue(slackmelding["melding"].asString().contains("<https://speil.intern.nav.no/vedtaksperiode/$vedtaksperiodeId|Åpne i Speil>"))
     }
 
     private fun tellOverlappendeInfotrygdperioderEtterInfotrygdEndring(hendelseId: UUID): Int =

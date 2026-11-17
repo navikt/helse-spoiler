@@ -16,3 +16,6 @@ spec:
             envVarPrefix: DATABASE
   kafka:
     pool: nav-dev
+  env:
+    - name: SPEIL_URL
+      value: https://speil.intern.dev.nav.no
