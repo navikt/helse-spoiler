@@ -1,11 +1,9 @@
 package no.nav.helse.spoiler
 
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
-import com.github.navikt.tbd_libs.test_support.CleanupStrategy
-import com.github.navikt.tbd_libs.test_support.DatabaseContainers
-import com.github.navikt.tbd_libs.test_support.TestDataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
+import no.nav.sykepenger.libs.postgres.TestDatabase
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -13,16 +11,14 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.*
 
-val databaseContainer = DatabaseContainers.container("spoiler", CleanupStrategy.tables("overlappende_infotrygd_periode,overlappende_infotrygdperiode_etter_infotrygdendring"))
+private val testDatabase = TestDatabase.start().also { it.migrer() }
 
 class SpoilerE2ETest {
-    private lateinit var testDataSource: TestDataSource
     private lateinit var testRapid: TestRapid
-    private val dataSource get() = testDataSource.ds
+    private val dataSource = testDatabase.dataSource
 
     @BeforeEach
     fun setup() {
-        testDataSource = databaseContainer.nyTilkobling()
         val overlappendeInfotrygdperiodeEtterInfotrygdendringDao = OverlappendeInfotrygdperiodeEtterInfotrygdendringDao(dataSource)
         testRapid =
             TestRapid().apply {
@@ -32,7 +28,7 @@ class SpoilerE2ETest {
 
     @AfterEach
     fun reset() {
-        databaseContainer.droppTilkobling(testDataSource)
+        testDatabase.tøm("overlappende_infotrygd_periode", "overlappende_infotrygdperiode_etter_infotrygdendring")
     }
 
     @Test

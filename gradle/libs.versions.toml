@@ -1,6 +1,7 @@
 [versions]
 tbdLibs = "20261029.1843"
 sykepengerGradlePlugins = "20261029.1945"
+sykepengerLibs = "20261116.0849"
 
 [libraries]
 flyway-postgresql = "org.flywaydb:flyway-database-postgresql:13.12.1"
@@ -10,8 +11,9 @@ postgresql = "org.postgresql:postgresql:42.7.14"
 
 rapidsAndRivers = "com.github.navikt:rapids-and-rivers:2026110308421793691732"
 
+sykepengerLibs-postgres = { module = "no.nav.sykepenger.libs:postgres", version.ref = "sykepengerLibs" }
+
 tbdLibs-personPseudoId = { module = "com.github.navikt.tbd-libs:person-pseudo-id", version.ref = "tbdLibs" }
-tbdLibs-postgresTestdatabaser = { module = "com.github.navikt.tbd-libs:postgres-testdatabaser", version.ref = "tbdLibs" }
 tbdLibs-rapidsAndRiversTest = { module = "com.github.navikt.tbd-libs:rapids-and-rivers-test", version.ref = "tbdLibs" }
 
 [plugins]
