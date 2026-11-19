@@ -29,4 +29,4 @@ spec:
     pool: nav-prod
   env:
     - name: SPEIL_URL
-      value: https://speil.intern.nav.no
+      value: https://speil.ansatt.nav.no
