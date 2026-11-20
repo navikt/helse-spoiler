@@ -1,7 +1,7 @@
 [versions]
 tbdLibs = "20261029.1843"
 sykepengerGradlePlugins = "20261029.1945"
-sykepengerLibs = "20261116.0849"
+sykepengerLibs = "20261120.1340"
 
 [libraries]
 flyway-postgresql = "org.flywaydb:flyway-database-postgresql:13.12.2"
