@@ -4,12 +4,12 @@ sykepengerGradlePlugins = "20261029.1945"
 sykepengerLibs = "20261120.1340"
 
 [libraries]
-flyway-postgresql = "org.flywaydb:flyway-database-postgresql:13.12.2"
+flyway-postgresql = "org.flywaydb:flyway-database-postgresql:13.13.0"
 hikariCP = "com.zaxxer:HikariCP:7.1.0"
 kotliquery = "com.github.seratch:kotliquery:1.9.1"
 postgresql = "org.postgresql:postgresql:42.7.14"
 
-rapidsAndRivers = "com.github.navikt:rapids-and-rivers:2026110308421793691732"
+rapidsAndRivers = "com.github.navikt:rapids-and-rivers:2026111908531795074794"
 
 sykepengerLibs-postgres = { module = "no.nav.sykepenger.libs:postgres", version.ref = "sykepengerLibs" }
 
